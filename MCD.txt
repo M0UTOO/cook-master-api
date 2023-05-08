@@ -1,0 +1,254 @@
+Sub Create_Tables()
+
+DoCmd.RunSQL "CREATE TABLE USERS(" & _
+   "Id_USERS COUNTER," & _
+   "email VARCHAR(100) NOT NULL," & _
+   "password CHAR(255) NOT NULL," & _
+   "firstName VARCHAR(50) NOT NULL," & _
+   "lastName VARCHAR(50) NOT NULL," & _
+   "profilePicture VARCHAR(100)," & _
+   "PRIMARY KEY(Id_USERS)," & _
+   "UNIQUE(email)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE MANAGER(" & _
+   "Id_MANAGER COUNTER," & _
+   "isItemManager LOGICAL," & _
+   "isClientManager LOGICAL," & _
+   "isContractorManager LOGICAL," & _
+   "Id_USERS INT NOT NULL," & _
+   "PRIMARY KEY(Id_MANAGER)," & _
+   "UNIQUE(Id_USERS)," & _
+   "FOREIGN KEY(Id_USERS) REFERENCES USERS(Id_USERS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE CONTRACTORS(" & _
+   "Id_CONTRACTORS COUNTER," & _
+   "presentation TEXT," & _
+   "Id_USERS INT NOT NULL," & _
+   "PRIMARY KEY(Id_CONTRACTORS)," & _
+   "UNIQUE(Id_USERS)," & _
+   "FOREIGN KEY(Id_USERS) REFERENCES USERS(Id_USERS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE PREMISES(" & _
+   "Id_PREMISES COUNTER," & _
+   "streetNumber SMALLINT," & _
+   "streetName VARCHAR(100)," & _
+   "city VARCHAR(100)," & _
+   "country VARCHAR(50)," & _
+   "PRIMARY KEY(Id_PREMISES)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE SUBSCRIPTION(" & _
+   "Id_SUBSCRIPTION COUNTER," & _
+   "name VARCHAR(50)," & _
+   "price CURRENCY," & _
+   "max_lesson_access BYTE," & _
+   "picture VARCHAR(50)," & _
+   "PRIMARY KEY(Id_SUBSCRIPTION)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE EVENTS(" & _
+   "Id_EVENTS COUNTER," & _
+   "type VARCHAR(50)," & _
+   "endTime DATETIME," & _
+   "startTime DATETIME," & _
+   "isInternal LOGICAL," & _
+   "isPrivate LOGICAL," & _
+   "PRIMARY KEY(Id_EVENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE CONVERSATIONS(" & _
+   "Id_CONVERSATIONS COUNTER," & _
+   "PRIMARY KEY(Id_CONVERSATIONS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE MESSAGES(" & _
+   "Id_MESSAGES COUNTER," & _
+   "content TEXT," & _
+   "isFromUser1 LOGICAL," & _
+   "Id_CONVERSATIONS INT NOT NULL," & _
+   "PRIMARY KEY(Id_MESSAGES)," & _
+   "FOREIGN KEY(Id_CONVERSATIONS) REFERENCES CONVERSATIONS(Id_CONVERSATIONS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE REWARDS(" & _
+   "Id_REWARDS COUNTER," & _
+   "name VARCHAR(100)," & _
+   "fidelityPointsCost INT," & _
+   "PRIMARY KEY(Id_REWARDS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE LESSONS(" & _
+   "Id_LESSONS COUNTER," & _
+   "content TEXT," & _
+   "name VARCHAR(50)," & _
+   "description VARCHAR(50)," & _
+   "level BYTE," & _
+   "PRIMARY KEY(Id_LESSONS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE SHOP_ITEM(" & _
+   "Id_SHOP_ITEM COUNTER," & _
+   "name VARCHAR(100)," & _
+   "description TEXT," & _
+   "price CURRENCY," & _
+   "stock BIGINT," & _
+   "PRIMARY KEY(Id_SHOP_ITEM)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE FOOD(" & _
+   "Id_FOOD COUNTER," & _
+   "name VARCHAR(100)," & _
+   "description TEXT," & _
+   "price CURRENCY," & _
+   "PRIMARY KEY(Id_FOOD)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE CLIENTS(" & _
+   "Id_CLIENTS COUNTER," & _
+   "fidelityPoints INT," & _
+   "streetName VARCHAR(100)," & _
+   "country VARCHAR(50)," & _
+   "city VARCHAR(100)," & _
+   "streetNumber SMALLINT," & _
+   "phoneNumber VARCHAR(25)," & _
+   "Id_SUBSCRIPTION INT," & _
+   "Id_USERS INT NOT NULL," & _
+   "PRIMARY KEY(Id_CLIENTS)," & _
+   "UNIQUE(Id_USERS)," & _
+   "FOREIGN KEY(Id_SUBSCRIPTION) REFERENCES SUBSCRIPTION(Id_SUBSCRIPTION)," & _
+   "FOREIGN KEY(Id_USERS) REFERENCES USERS(Id_USERS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE COOKING_SPACES(" & _
+   "Id_COOKING_SPACES COUNTER," & _
+   "size DECIMAL(5,2)," & _
+   "name VARCHAR(50)," & _
+   "isAvailable LOGICAL," & _
+   "PricePerHour CURRENCY," & _
+   "Id_CLIENTS INT," & _
+   "Id_PREMISES INT NOT NULL," & _
+   "PRIMARY KEY(Id_COOKING_SPACES)," & _
+   "FOREIGN KEY(Id_CLIENTS) REFERENCES CLIENTS(Id_CLIENTS)," & _
+   "FOREIGN KEY(Id_PREMISES) REFERENCES PREMISES(Id_PREMISES)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE COOKING_ITEMS(" & _
+   "Id_COOKING_ITEMS COUNTER," & _
+   "name VARCHAR(50)," & _
+   "status VARCHAR(20)," & _
+   "Id_COOKING_SPACES INT NOT NULL," & _
+   "PRIMARY KEY(Id_COOKING_ITEMS)," & _
+   "FOREIGN KEY(Id_COOKING_SPACES) REFERENCES COOKING_SPACES(Id_COOKING_SPACES)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE COMMENTS(" & _
+   "Id_COMMENTS COUNTER," & _
+   "grade DECIMAL(2,1) NOT NULL," & _
+   "content TEXT," & _
+   "photo_link VARCHAR(50)," & _
+   "Id_CLIENTS INT NOT NULL," & _
+   "Id_EVENTS INT NOT NULL," & _
+   "PRIMARY KEY(Id_COMMENTS)," & _
+   "FOREIGN KEY(Id_CLIENTS) REFERENCES CLIENTS(Id_CLIENTS)," & _
+   "FOREIGN KEY(Id_EVENTS) REFERENCES EVENTS(Id_EVENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE ORDERS(" & _
+   "Id_ORDERS COUNTER," & _
+   "status VARCHAR(20)," & _
+   "bill VARCHAR(100)," & _
+   "deliveryAddress VARCHAR(50)," & _
+   "Id_CONTRACTORS INT NOT NULL," & _
+   "Id_CONTRACTORS_1 INT NOT NULL," & _
+   "Id_CLIENTS INT NOT NULL," & _
+   "PRIMARY KEY(Id_ORDERS)," & _
+   "FOREIGN KEY(Id_CONTRACTORS) REFERENCES CONTRACTORS(Id_CONTRACTORS)," & _
+   "FOREIGN KEY(Id_CONTRACTORS_1) REFERENCES CONTRACTORS(Id_CONTRACTORS)," & _
+   "FOREIGN KEY(Id_CLIENTS) REFERENCES CLIENTS(Id_CLIENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE INGREDIENT(" & _
+   "Id_INGREDIENT COUNTER," & _
+   "isAllergen LOGICAL," & _
+   "Id_COOKING_SPACES INT NOT NULL," & _
+   "PRIMARY KEY(Id_INGREDIENT)," & _
+   "FOREIGN KEY(Id_COOKING_SPACES) REFERENCES COOKING_SPACES(Id_COOKING_SPACES)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE PARTICIPATES(" & _
+   "Id_CLIENTS INT," & _
+   "Id_EVENTS INT," & _
+   "PRIMARY KEY(Id_CLIENTS, Id_EVENTS)," & _
+   "FOREIGN KEY(Id_CLIENTS) REFERENCES CLIENTS(Id_CLIENTS)," & _
+   "FOREIGN KEY(Id_EVENTS) REFERENCES EVENTS(Id_EVENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE ANIMATES(" & _
+   "Id_CONTRACTORS INT," & _
+   "Id_EVENTS INT," & _
+   "PRIMARY KEY(Id_CONTRACTORS, Id_EVENTS)," & _
+   "FOREIGN KEY(Id_CONTRACTORS) REFERENCES CONTRACTORS(Id_CONTRACTORS)," & _
+   "FOREIGN KEY(Id_EVENTS) REFERENCES EVENTS(Id_EVENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE ORGANIZES(" & _
+   "Id_MANAGER INT," & _
+   "Id_EVENTS INT," & _
+   "PRIMARY KEY(Id_MANAGER, Id_EVENTS)," & _
+   "FOREIGN KEY(Id_MANAGER) REFERENCES MANAGER(Id_MANAGER)," & _
+   "FOREIGN KEY(Id_EVENTS) REFERENCES EVENTS(Id_EVENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE IS_HOSTED(" & _
+   "Id_COOKING_SPACES INT," & _
+   "Id_EVENTS INT," & _
+   "PRIMARY KEY(Id_COOKING_SPACES, Id_EVENTS)," & _
+   "FOREIGN KEY(Id_COOKING_SPACES) REFERENCES COOKING_SPACES(Id_COOKING_SPACES)," & _
+   "FOREIGN KEY(Id_EVENTS) REFERENCES EVENTS(Id_EVENTS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE TALKS(" & _
+   "Id_USERS INT," & _
+   "Id_CONVERSATIONS INT," & _
+   "PRIMARY KEY(Id_USERS, Id_CONVERSATIONS)," & _
+   "FOREIGN KEY(Id_USERS) REFERENCES USERS(Id_USERS)," & _
+   "FOREIGN KEY(Id_CONVERSATIONS) REFERENCES CONVERSATIONS(Id_CONVERSATIONS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE TEACHES(" & _
+   "Id_CONTRACTORS INT," & _
+   "Id_LESSONS INT," & _
+   "PRIMARY KEY(Id_CONTRACTORS, Id_LESSONS)," & _
+   "FOREIGN KEY(Id_CONTRACTORS) REFERENCES CONTRACTORS(Id_CONTRACTORS)," & _
+   "FOREIGN KEY(Id_LESSONS) REFERENCES LESSONS(Id_LESSONS)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE CONTAINS_ITEM(" & _
+   "Id_ORDERS INT," & _
+   "Id_SHOP_ITEM INT," & _
+   "PRIMARY KEY(Id_ORDERS, Id_SHOP_ITEM)," & _
+   "FOREIGN KEY(Id_ORDERS) REFERENCES ORDERS(Id_ORDERS)," & _
+   "FOREIGN KEY(Id_SHOP_ITEM) REFERENCES SHOP_ITEM(Id_SHOP_ITEM)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE CONTAINS_FOOD(" & _
+   "Id_ORDERS INT," & _
+   "Id_FOOD INT," & _
+   "PRIMARY KEY(Id_ORDERS, Id_FOOD)," & _
+   "FOREIGN KEY(Id_ORDERS) REFERENCES ORDERS(Id_ORDERS)," & _
+   "FOREIGN KEY(Id_FOOD) REFERENCES FOOD(Id_FOOD)" & _
+");"   
+
+DoCmd.RunSQL "CREATE TABLE WATCHES(" & _
+   "Id_CLIENTS INT," & _
+   "Id_LESSONS INT," & _
+   "counter INT," & _
+   "PRIMARY KEY(Id_CLIENTS, Id_LESSONS)," & _
+   "FOREIGN KEY(Id_CLIENTS) REFERENCES CLIENTS(Id_CLIENTS)," & _
+   "FOREIGN KEY(Id_LESSONS) REFERENCES LESSONS(Id_LESSONS)" & _
+");"   
+
+End Sub
