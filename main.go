@@ -13,6 +13,7 @@ func main() {
 	tokenAPI := token.GetAPIToken()
 	r := gin.Default()
 	r.GET("/user/:id", getUserByID(tokenAPI))
+	r.GET("/users")
 	r.POST("/user/email", postUserByEmail(tokenAPI))
 	r.Run(":8080")
 }
@@ -37,6 +38,14 @@ func getUserByID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't be empty",
+			})
+		}
+
 		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -47,38 +56,24 @@ func getUserByID(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT id, username FROM users")
+		type User struct {
+			Id int `json:"id"`
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+
+		var user User
+
+		err = db.QueryRow("SELECT * FROM users WHERE id=" + id).Scan(&user.Id, &user.Username, &user.Password)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error": err,
 				"message": "error on query request to bdd",
 			})
 			return
 		}
-		defer rows.Close()
 
-		type User struct {
-			Username string `json:"username"`
-			Id int `json:"id"`
-		}
-
-		var list []User
-
-		for rows.Next() {
-
-			var user User
-
-			err := rows.Scan(&user.Id, &user.Username)
-			if err != nil {
-				c.AbortWithStatus(500)
-				return
-			}
-
-			list = append(list, user)
-
-		}
-
-		c.JSON(200, list)
+		c.JSON(200, user)
 		return
 	}
 }
@@ -118,10 +113,6 @@ func postUserByEmail (tokenAPI string) func(c *gin.Context) {
 			})
 			return
 		}
-
-
-
-
 
 		c.JSON(200, req)
 		return
