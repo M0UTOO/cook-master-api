@@ -2,121 +2,25 @@ package main
 
 import (
 	"cook-master-api/token"
-	"database/sql"
+	"cook-master-api/users"
+	"cook-master-api/conversations"
 	"github.com/gin-gonic/gin"
-	//"io/ioutil"
-	_ "github.com/go-sql-driver/mysql"
-	//"fmt"
 )
 
 func main() {
 	tokenAPI := token.GetAPIToken()
 	r := gin.Default()
-	r.GET("/user/:id", getUserByID(tokenAPI))
-	r.GET("/users")
-	r.POST("/user/email", postUserByEmail(tokenAPI))
-	r.Run(":8080")
-}
-
-func getUserByID(tokenAPI string) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		
-		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "missing token",
-			})
-		}
-
-		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
-		if err != nil {
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "wrong token",
-			})
-			return
-		}
-
-		id := c.Param("id")
-		if id == "" {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "id can't be empty",
-			})
-		}
-
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "cannot connect to bdd",
-			})
-			return
-		}
-		defer db.Close()
-
-		type User struct {
-			Id int `json:"id"`
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-
-		var user User
-
-		err = db.QueryRow("SELECT * FROM users WHERE id=" + id).Scan(&user.Id, &user.Username, &user.Password)
-		if err != nil {
-			c.JSON(498, gin.H{
-				"error": err,
-				"message": "error on query request to bdd",
-			})
-			return
-		}
-
-		c.JSON(200, user)
-		return
-	}
-}
-
-func postUserByEmail (tokenAPI string) func(c *gin.Context) {
-	return func(c *gin.Context) {
-
-		type postUserByEmailReq struct {
-			Password string `json:"password"`
-			Email string `json:"email"`
-		}
-
-		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "missing token",
-			})
-		}
-
-		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
-		if err != nil {
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "wrong token",
-			})
-			return
-		}
-
-		var req postUserByEmailReq
-
-		err = c.BindJSON(&req)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "can't decode json request",
-			})
-			return
-		}
-
-		c.JSON(200, req)
-		return
-	}
+	r.GET("/", index)
+	user := r.Group("/user")
+		user.GET("/:id", users.GetUserByID(tokenAPI))
+		user.GET("/search/:filter", users.GetUserByFilter(tokenAPI))
+		user.PATCH("/", users.UpdateUser(tokenAPI))
+		user.DELETE("/", users.DeleteUser(tokenAPI))
+		user.GET("/all", users.GetUsers(tokenAPI))
+		user.POST("/", users.PostUser(tokenAPI))
+	//conversation := r.Group("/conversations")
+		//conversation.POST("/", conversations.PostConversations(tokenAPI))
+	r.Run(":9000")
 }
 
 func index(c *gin.Context) {

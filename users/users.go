@@ -1,0 +1,589 @@
+package users
+
+import (
+	"database/sql"
+	"github.com/gin-gonic/gin"
+	"cook-master-api/token"
+	"cook-master-api/utils"
+	"regexp"
+	"fmt"
+	"strings"
+	"strconv"
+	_ "github.com/go-sql-driver/mysql"
+)
+
+type User struct {
+	Id int `json:"id"`
+	Email string `json:"email"`
+	Password string `json:"password"`
+	FirstName string `json:"firstname"`
+	LastName string `json:"lastname"`
+	ProfilePicture string `json:"profilepicture"`
+}
+
+func GetUserByID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var user User
+
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "user not found",
+			})
+			return
+		}
+
+		c.JSON(200, user)
+		return
+	}
+}
+
+func PostUser(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type UserReq struct {
+			Email string `json:"email"`
+			Password string `json:"password"`
+			FirstName string `json:"firstname"`
+			LastName string `json:"lastname"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		var req UserReq
+
+		err = c.BindJSON(&req)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "can't decode json request",
+			})
+			return
+		}
+
+		if utils.IsSafeString(req.Email) || utils.IsSafeString(req.Password) || utils.IsSafeString(req.FirstName) || utils.IsSafeString(req.LastName) {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "field can't contain sql injection",
+			})
+			return
+		}
+
+		if req.Email == "" || req.Password == "" || req.FirstName == "" || req.LastName == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "missing field",
+			})
+			return
+		}
+
+		match, _ := regexp.MatchString("^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-z]{2,6}$", req.Email)
+		if !match {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong email format",
+			})
+			return
+		}
+
+		if len(req.Password) < 0 || len(req.Password) > 255 {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong password length",
+			})
+			return
+		}
+
+		if len(req.FirstName) < 0 || len(req.FirstName) > 50 {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong firstname length",
+			})
+			return
+		}
+
+		if len(req.LastName) < 0 || len(req.LastName) > 50 {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong lastname length",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', 'default.png')")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "error on query request to bdd",
+			})
+			return
+		}
+		defer rows.Close()
+
+		c.JSON(200, gin.H{
+			"error": false,
+			"message": "user created",
+		})
+		return
+	}
+}
+
+func UpdateUser(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var req User
+
+		err = c.BindJSON(&req)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "can't decode json request",
+			})
+			return
+		}
+
+		var setClause []string
+
+		if req.FirstName != "" {
+			if utils.IsSafeString(req.FirstName) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong firstname format",
+				})
+				return
+			}
+			if len(req.FirstName) < 0 || len(req.FirstName) > 50 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong firstname length",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("firstname = '%s'", req.FirstName))
+		}
+		if req.LastName != "" {
+			if utils.IsSafeString(req.LastName) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong lastname format",
+				})
+				return
+			}
+			if len(req.LastName) < 0 || len(req.LastName) > 50 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong lastname length",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("lastname = '%s'", req.LastName))
+		}
+		if req.Email != "" {
+			if utils.IsSafeString(req.Email) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong email format",
+				})
+				return
+			}
+			if len(req.Email) < 0 || len(req.Email) > 100 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong email length",
+				})
+				return
+			}
+			match, _ := regexp.MatchString("^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-z]{2,6}$", req.Email)
+			if !match {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong email format",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("email = '%s'", req.Email))
+		}
+		if req.Password != "" {
+			if utils.IsSafeString(req.Password) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong password format",
+				})
+				return
+			}
+			if len(req.Password) < 0 || len(req.Password) > 255 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong password length",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("password = '%s'", req.Password))
+		}
+		if req.ProfilePicture != "" {
+			if utils.IsSafeString(req.ProfilePicture) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong profilepicture format",
+				})
+				return
+			}
+			if len(req.ProfilePicture) < 0 || len(req.ProfilePicture) > 100 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong profilepicture length",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("profilepicture = '%s'", req.ProfilePicture))
+		}
+
+		if len(setClause) == 0 {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "no field to update",
+			})
+			return
+		}
+
+		var user User
+
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + strconv.Itoa(req.Id)).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "user not found",
+			})
+			return
+		}
+
+		query := fmt.Sprintf("UPDATE USERS SET %s WHERE Id_USERS = %d", strings.Join(setClause, ", "), req.Id)
+
+		_, err = db.Query(query)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "error on query request to bdd",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error": false,
+			"message": "user updated",
+		})
+		return
+	}
+}
+
+func DeleteUser(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		type UserReq struct {
+			Id int `json:"id"`
+		}
+
+		var req UserReq
+
+		err = c.BindJSON(&req)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "can't decode json request",
+			})
+			return
+		}
+
+		query := fmt.Sprintf("DELETE FROM USERS WHERE Id_USERS = %d", req.Id)
+
+		_, err = db.Query(query)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "error on query request to bdd",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error": false,
+			"message": "user deleted",
+		})
+		return
+	}
+}
+
+func GetUserByFilter(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		filter := c.Param("filter")
+		if filter == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't be empty",
+			})
+		}
+
+		if !utils.IsSafeString(filter) {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong filter format",
+			})
+			return
+		}
+		
+		query := fmt.Sprintf("SELECT * FROM USERS WHERE lastname LIKE '%%%s%%' OR firstname LIKE '%%%s%%' OR email LIKE '%%%s%%'", filter, filter, filter)
+
+		rows, err := db.Query(query)
+		fmt.Println(err)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "error on query request to bdd",
+			})
+			return
+		}
+		defer rows.Close()
+
+		var users []User
+
+		for rows.Next() {
+			var user User
+			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.ProfilePicture)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "error on scan rows",
+				})
+				return
+			}
+			users = append(users, user)
+		}
+
+		if len(users) == 0 {
+			c.JSON(404, gin.H{
+				"error": true,
+				"message": "no user found",
+			})
+			return
+		}
+
+		c.JSON(200, users)
+		return
+	}
+}
+
+
+
+
+func GetUsers(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT * FROM USERS ORDER BY lastname")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "user not found",
+			})
+			return
+		}
+
+		var users []User
+
+		for rows.Next() {
+			var user User
+			err = rows.Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "user not found",
+				})
+				return
+			}
+			users = append(users, user)
+		}
+
+		c.JSON(200, users)
+		return
+	}
+}
