@@ -21,6 +21,30 @@ type User struct {
 	ProfilePicture string `json:"profilepicture"`
 }
 
+type Manager struct {
+	IdManager int `json:"idmanager"`
+	IsItemManager bool `json:"isitemmanager"`
+	IsClientManager bool `json:"isclientmanager"`
+	IsContractorManager bool `json:"iscontractormanager"`
+	IsSuperAdmin bool `json:"issuperadmin"`
+}
+
+type Client struct {
+	IdClient int `json:"idclient"`
+	FidelityPoints int `json:"fidelitypoints"`
+	StreetName string `json:"streetname"`
+	Country string `json:"country"`
+	City string `json:"city"`
+	SteetNumber int `json:"streetnumber"`
+	PhoneNumber string `json:"phonenumber"`
+	Subscription int `json:"subscription"`
+}
+
+type Contractor struct {
+	IdContractor int `json:"idcontractor"`
+	Presentation string `json:"presentation"`
+}
+
 func GetUserByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		
@@ -87,13 +111,6 @@ func GetUserByID(tokenAPI string) func(c *gin.Context) {
 func PostUser(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
-		type UserReq struct {
-			Email string `json:"email"`
-			Password string `json:"password"`
-			FirstName string `json:"firstname"`
-			LastName string `json:"lastname"`
-		}
-
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil{
 			c.JSON(498, gin.H{
@@ -111,8 +128,43 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var req UserReq
+		typeOfUser := c.Request.Header["Type"]
+		if typeOfUser == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing type",
+			})
+		}
 
+		if typeOfUser[0] != "Client" && typeOfUser[0] != "Contractor" && typeOfUser[0] != "Manager" {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong type",
+			})
+			return
+		}
+
+		type UserRequest struct {
+			Email string `json:"email"`
+			Password string `json:"password"`
+			FirstName string `json:"firstname"`
+			LastName string `json:"lastname"`
+			FidelityPoints int `json:"fidelitypoints"`
+			StreetName string `json:"streetname"`
+			Country string `json:"country"`
+			City string `json:"city"`
+			SteetNumber int `json:"streetnumber"`
+			PhoneNumber string `json:"phonenumber"`
+			Subscription int `json:"subscription"`
+			Presentation string `json:"presentation"`
+			IsItemManager bool `json:"isitemmanager"`
+			IsClientManager bool `json:"isclientmanager"`
+			IsContractorManager bool `json:"iscontractormanager"`
+			IsSuperAdmin bool `json:"issuperadmin"`
+		}
+
+		var req UserRequest
+		
 		err = c.BindJSON(&req)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -122,7 +174,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if utils.IsSafeString(req.Email) || utils.IsSafeString(req.Password) || utils.IsSafeString(req.FirstName) || utils.IsSafeString(req.LastName) {
+		if !utils.IsSafeString(req.Email) || !utils.IsSafeString(req.Password) || !utils.IsSafeString(req.FirstName) || !utils.IsSafeString(req.LastName) {
 			c.JSON(400, gin.H{
 				"error": true,
 				"message": "field can't contain sql injection",
@@ -171,6 +223,73 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		if typeOfUser[0] == "Client" {
+			if req.StreetName == "" || req.Country == "" || req.City == "" || req.SteetNumber <= 0 || req.PhoneNumber == "" || req.Subscription <= 0 || req.FidelityPoints < 0 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "missing field",
+				})
+				return
+			}
+
+			if len(req.StreetName) < 0 || len(req.StreetName) > 100 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong streetname length",
+				})
+				return
+			}
+
+			if len(req.Country) < 0 || len(req.Country) > 50 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong country length",
+				})
+				return
+			}
+
+			if len(req.City) < 0 || len(req.City) > 100 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong city length",
+				})
+				return
+			}
+
+			if len(req.PhoneNumber) < 0 || len(req.PhoneNumber) > 25 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong phonenumber length",
+				})
+				return
+			}
+
+			match, _ := regexp.MatchString("^[0-9]{10}$", req.PhoneNumber)
+			if !match {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong phonenumber format",
+				})
+				return
+			}
+		} else if typeOfUser[0] == "Manager" {
+			if req.IsItemManager == false && req.IsClientManager == false && req.IsContractorManager == false && req.IsSuperAdmin == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "manager must have at least one role",
+				})
+				return
+			}
+		} else if typeOfUser[0] == "Contractor" {
+			if req.Presentation == "" {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "missing field",
+				})
+				return
+			}
+		}
+
 		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -181,21 +300,76 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', 'default.png')")
+		result, err := db.Exec("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', 'default.png')")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
-				"message": "error on query request to bdd",
+				"message": "cannot insert user in bdd",
 			})
 			return
 		}
-		defer rows.Close()
 
-		c.JSON(200, gin.H{
-			"error": false,
-			"message": "user created",
-		})
-		return
+		conversationId, err := result.LastInsertId()
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot get user id",
+			})
+			return
+		}
+
+		if typeOfUser[0] == "Client" {
+			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, '" + strconv.Itoa(req.FidelityPoints) + "', '" + req.StreetName + "', '" + req.Country + "', '" + req.City + "', '" + strconv.Itoa(req.SteetNumber) + "', '" + req.PhoneNumber + "', '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(conversationId, 10) + "')")
+			fmt.Println(err)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "error on query request to bdd",
+				})
+				return
+			}
+			defer rows.Close()
+
+			c.JSON(200, gin.H{
+				"error": false,
+				"message": "client created",
+			})
+			return
+
+		} else if typeOfUser[0] == "Manager" {
+			rows, err := db.Query("INSERT INTO MANAGER VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(conversationId, 10))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "error on query request to bdd",
+				})
+				return
+			}
+			defer rows.Close()
+
+			c.JSON(200, gin.H{
+				"error": false,
+				"message": "manager created",
+			})
+			return
+
+		} else if typeOfUser[0] == "Contractor" {
+			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + strconv.FormatInt(conversationId, 10) + "')")
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "error on query request to bdd",
+				})
+				return
+			}
+			defer rows.Close()
+
+			c.JSON(200, gin.H{
+				"error": false,
+				"message": "contractor created",
+			})
+			return
+		}
 	}
 }
 

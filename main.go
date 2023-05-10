@@ -3,7 +3,8 @@ package main
 import (
 	"cook-master-api/token"
 	"cook-master-api/users"
-	"cook-master-api/conversations"
+	//"cook-master-api/conversations"
+	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,8 +19,18 @@ func main() {
 		user.DELETE("/", users.DeleteUser(tokenAPI))
 		user.GET("/all", users.GetUsers(tokenAPI))
 		user.POST("/", users.PostUser(tokenAPI))
+	subscription := r.Group("/subscription")
+		subscription.GET("/", subscriptions.GetSubscriptions(tokenAPI))
+		subscription.POST("/", subscriptions.PostSubscription(tokenAPI))
+		subscription.DELETE("/:id", subscriptions.DeleteSubscription(tokenAPI))
+		subscription.PATCH("/:id", subscriptions.UpdateSubscription(tokenAPI))
 	//conversation := r.Group("/conversations")
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
+		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
+		//conversation.GET("/all", conversations.GetConversations(tokenAPI))
+		//conversation.GET("/:id", conversations.GetConversationByID(tokenAPI))
+		//conversation.GET("/user/:id", conversations.GetConversationForUserID(tokenAPI))
+		//conversation.POST("/message", conversations.PostMessage(tokenAPI))
 	r.Run(":9000")
 }
 
