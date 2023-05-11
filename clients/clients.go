@@ -38,6 +38,7 @@ type Client struct {
 	Subscription int `json:"subscription"`
 }
 
+
 func GetClients(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
@@ -58,7 +59,7 @@ func GetClients(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -133,7 +134,7 @@ func GetClientByID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -248,7 +249,7 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -319,7 +320,7 @@ func LoginClient(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,

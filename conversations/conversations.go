@@ -60,7 +60,7 @@ func PostConversations(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -141,7 +141,7 @@ func DeleteConversations(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -198,7 +198,7 @@ func GetConversations(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -257,7 +257,7 @@ func GetConversationByID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -333,7 +333,7 @@ func GetConversationForUserID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -409,7 +409,7 @@ func PostMessage(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		db, err := sql.Open("mysql", "admin:Respons11@tcp(localhost:3306)/cookmaster")
+		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
