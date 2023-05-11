@@ -17,3 +17,6 @@
 # Sensitive settings yml files
 *.yml 
 */*.yml
+
+# VsCode Config
+.vscode
