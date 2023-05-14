@@ -16,9 +16,9 @@ func main() {
 	r := gin.Default()
 	r.GET("/", index)
 	user := r.Group("/user")
-		user.GET("/:id", users.GetUserByID(tokenAPI)) // WORKING BUT MAYBE NOT USEFUL
+		user.GET("/:id", users.GetUserByID(tokenAPI)) // WORKING
 		user.GET("/search/:filter", users.GetUserByFilter(tokenAPI)) // WORKING BUT MAYBE NOT USEFUL
-		user.PATCH("/", users.UpdateUser(tokenAPI)) // WORKING
+		user.PATCH("/:id", users.UpdateUser(tokenAPI)) // WORKING
 		user.GET("/all", users.GetUsers(tokenAPI)) // WORKING BUT MAYBE NOT USEFUL
 		user.POST("/", users.PostUser(tokenAPI)) // WORKING
 	client := r.Group("/client")

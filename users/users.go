@@ -321,6 +321,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		if typeOfUser[0] == "Client" {
 			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, '" + strconv.Itoa(req.FidelityPoints) + "', '" + req.StreetName + "', '" + req.Country + "', '" + req.City + "', '" + strconv.Itoa(req.SteetNumber) + "', '" + req.PhoneNumber + "', '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(conversationId, 10) + "')")
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "error on query request to bdd",
@@ -388,6 +389,15 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 			c.JSON(498, gin.H{
 				"error": true,
 				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't be empty",
 			})
 			return
 		}
@@ -519,7 +529,7 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 
 		var user User
 
-		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + strconv.Itoa(req.Id)).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -528,13 +538,11 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		query := fmt.Sprintf("UPDATE USERS SET %s WHERE Id_USERS = %d", strings.Join(setClause, ", "), req.Id)
-
-		_, err = db.Query(query)
+		_, err = db.Exec("UPDATE USERS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS=" + id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
-				"message": "error on query request to bdd",
+				"message": "cannot update user",
 			})
 			return
 		}

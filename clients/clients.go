@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"strconv"
 	"strings"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -238,7 +239,7 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "PhoneNumber = '"+client.PhoneNumber+"'")
 		}
 		if client.Subscription >= 0 {
-			setClause = append(setClause, "Id_SUBSCRIPTION = '"+strconv.Itoa(client.Subscription)+"'")
+			setClause = append(setClause, "Id_SUBSCRIPTIONS = '"+strconv.Itoa(client.Subscription)+"'")
 		}
 
 		if len(setClause) == 0 {
@@ -260,6 +261,7 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		_, err = db.Exec("UPDATE CLIENTS SET " + strings.Join(setClause, ", ") + " WHERE Id_CLIENTS = " + id)
+		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
