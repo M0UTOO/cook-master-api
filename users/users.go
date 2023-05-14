@@ -320,7 +320,6 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 
 		if typeOfUser[0] == "Client" {
 			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, '" + strconv.Itoa(req.FidelityPoints) + "', '" + req.StreetName + "', '" + req.Country + "', '" + req.City + "', '" + strconv.Itoa(req.SteetNumber) + "', '" + req.PhoneNumber + "', '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(conversationId, 10) + "')")
-			fmt.Println(err)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -337,7 +336,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 
 		} else if typeOfUser[0] == "Manager" {
-			rows, err := db.Query("INSERT INTO MANAGER VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(conversationId, 10))
+			rows, err := db.Query("INSERT INTO MANAGERS VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(conversationId, 10))
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -533,7 +532,6 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 
 		_, err = db.Query(query)
 		if err != nil {
-			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "error on query request to bdd",
@@ -598,7 +596,6 @@ func GetUserByFilter(tokenAPI string) func(c *gin.Context) {
 		query := fmt.Sprintf("SELECT * FROM USERS WHERE lastname LIKE '%%%s%%' OR firstname LIKE '%%%s%%' OR email LIKE '%%%s%%'", filter, filter, filter)
 
 		rows, err := db.Query(query)
-		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,

@@ -4,8 +4,8 @@ import (
 	"cook-master-api/token"
 	"cook-master-api/users"
 	"cook-master-api/clients"
-	//"cook-master-api/contractors"
-	//"cook-master-api/managers"
+	"cook-master-api/contractors"
+	"cook-master-api/managers"
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
@@ -27,16 +27,18 @@ func main() {
 		client.PATCH("/:id", clients.UpdateClient(tokenAPI)) // WORKING
 		client.GET("/login" , clients.LoginClient(tokenAPI)) // WORKING
 		//client.DELETE("/:id", clients.DeleteClient(tokenAPI)) TO DO AFTER OTHERS TABLES
-	//contractor := r.Group("/contractor")
-		//contractor.GET("/", contractors.GetContractors(tokenAPI)) TO DO
-		//contractor.GET("/:id", contractors.GetContractorByID(tokenAPI)) TO DO
-		//contractor.PATCH("/:id", contractors.UpdateContractor(tokenAPI)) TO DO
+	contractor := r.Group("/contractor")
+		contractor.GET("/all", contractors.GetContractors(tokenAPI)) // WORKING
+		contractor.GET("/:id", contractors.GetContractorByID(tokenAPI)) // WORKING
+		contractor.PATCH("/:id", contractors.UpdateContractor(tokenAPI)) // WORKING
+		contractor.GET("/login" , contractors.LoginContractor(tokenAPI)) // WORKING
 		//contractor.DELETE("/:id", contractors.DeleteContractor(tokenAPI)) TO DO AFTER OTHERS TABLES
-	//manager := r.Group("/manager")
-		//manager.GET("/", managers.GetManagers(tokenAPI)) TO DO
-		//manager.GET("/:id", managers.GetManagerByID(tokenAPI)) TO DO
-		//manager.PATCH("/:id", managers.UpdateManager(tokenAPI)) TO DO
-		//manager.DELETE("/:id", managers.DeleteManager(tokenAPI)) TO DO AFTER OTHERS TABLES
+	manager := r.Group("/manager")
+		manager.GET("/all", managers.GetManagers(tokenAPI)) // WORKING
+		manager.GET("/:id", managers.GetManagerByID(tokenAPI)) // WORKING
+		manager.PATCH("/:id", managers.UpdateManager(tokenAPI)) // WORKING
+		manager.GET("/login" , managers.LoginManager(tokenAPI)) // WORKING
+		// manager.DELETE("/:id", managers.DeleteManager(tokenAPI)) // TO DO AFTER OTHERS TABLES
 	subscription := r.Group("/subscription")
 		subscription.GET("/", subscriptions.GetSubscriptions(tokenAPI)) // WORKING
 		subscription.POST("/", subscriptions.PostSubscription(tokenAPI)) // WORKING

@@ -48,7 +48,7 @@ func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT * FROM SUBSCRIPTION")
+		rows, err := db.Query("SELECT * FROM SUBSCRIPTIONS")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -134,7 +134,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		_, err = db.Exec("INSERT INTO SUBSCRIPTION (name, price, max_lesson_access, picture) VALUES (?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture)
+		_, err = db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture) VALUES (?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -198,7 +198,7 @@ func DeleteSubscription(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		_, err = db.Exec("DELETE FROM SUBSCRIPTION WHERE Id_SUBSCRIPTION = ?", id)
+		_, err = db.Exec("DELETE FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -313,7 +313,7 @@ func UpdateSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("UPDATE SUBSCRIPTION SET " + strings.Join(setClause, ", ") + " WHERE Id_SUBSCRIPTION = ?", id)
+		_, err = db.Exec("UPDATE SUBSCRIPTIONS SET " + strings.Join(setClause, ", ") + " WHERE Id_SUBSCRIPTIONS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
