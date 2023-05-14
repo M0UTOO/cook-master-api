@@ -147,7 +147,8 @@ func GetClientByID(tokenAPI string) func(c *gin.Context) {
 
 		var client ClientUser
 
-		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE Id_CLIENTS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture)
+		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -273,97 +274,6 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"error": false,
 			"message": "client updated",
-		})
-		return
-	}
-}
-
-func LoginClient(tokenAPI string) func(c *gin.Context) {
-	return func(c *gin.Context) {
-
-		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "missing token",
-			})
-		}
-
-		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
-		if err != nil {
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "wrong token",
-			})
-			return
-		}
-
-		type Login struct {
-			Email string `json:"email"`
-			Password string `json:"password"`
-		}
-
-		var login Login
-
-		err = c.BindJSON(&login)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "bad json",
-			})
-			return
-		}
-
-		if !utils.IsSafeString(login.Email) || !utils.IsSafeString(login.Password) {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "bad json",
-			})
-			return
-		}
-
-		db, err := sql.Open("mysql", token.DbLogins)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "cannot connect to bdd",
-			})
-			return
-		}
-		defer db.Close()
-
-		var id int
-
-		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE email = '" + login.Email + "'").Scan(&id)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "email not found",
-			})
-			return
-		}
-
-		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "'").Scan(&id)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "wrong password",
-			})
-			return
-		}
-
-		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&id)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "user is not a client",
-			})
-			return
-		}
-
-		c.JSON(200, gin.H{
-			"error": false,
-			"message": "login success",
 		})
 		return
 	}

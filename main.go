@@ -22,23 +22,21 @@ func main() {
 		user.PATCH("/:id", users.UpdateUser(tokenAPI)) // WORKING
 		user.GET("/all", users.GetUsers(tokenAPI)) // WORKING BUT MAYBE NOT USEFUL
 		user.POST("/", users.PostUser(tokenAPI)) // WORKING
+		user.GET("/login", users.LoginUser(tokenAPI)) // WORKING
 	client := r.Group("/client")
 		client.GET("/all", clients.GetClients(tokenAPI)) // WORKING
 		client.GET("/:id", clients.GetClientByID(tokenAPI)) // WORKING
 		client.PATCH("/:id", clients.UpdateClient(tokenAPI)) // WORKING
-		client.GET("/login" , clients.LoginClient(tokenAPI)) // WORKING
 		//client.DELETE("/:id", clients.DeleteClient(tokenAPI)) TO DO AFTER OTHERS TABLES
 	contractor := r.Group("/contractor")
 		contractor.GET("/all", contractors.GetContractors(tokenAPI)) // WORKING
 		contractor.GET("/:id", contractors.GetContractorByID(tokenAPI)) // WORKING
 		contractor.PATCH("/:id", contractors.UpdateContractor(tokenAPI)) // WORKING
-		contractor.GET("/login" , contractors.LoginContractor(tokenAPI)) // WORKING
 		//contractor.DELETE("/:id", contractors.DeleteContractor(tokenAPI)) TO DO AFTER OTHERS TABLES
 	manager := r.Group("/manager")
 		manager.GET("/all", managers.GetManagers(tokenAPI)) // WORKING
 		manager.GET("/:id", managers.GetManagerByID(tokenAPI)) // WORKING
 		manager.PATCH("/:id", managers.UpdateManager(tokenAPI)) // WORKING
-		manager.GET("/login" , managers.LoginManager(tokenAPI)) // WORKING
 		// manager.DELETE("/:id", managers.DeleteManager(tokenAPI)) // TO DO AFTER OTHERS TABLES
 	subscription := r.Group("/subscription")
 		subscription.GET("/all", subscriptions.GetSubscriptions(tokenAPI)) // WORKING
@@ -48,6 +46,9 @@ func main() {
 		subscription.PATCH("/:id", subscriptions.UpdateSubscription(tokenAPI)) // WORKING
 	//event := r.Group("/event")
 		//event.GET("/all", events.GetEvents(tokenAPI)) // WORKING
+		//event.GET("/:id", events.GetEventByID(tokenAPI)) // WORKING
+		//event.GET("/groups/:id", events.GetEventByGroupID(tokenAPI)) // WORKING
+		//event.POST("/", events.PostEvent(tokenAPI)) // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
 		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))

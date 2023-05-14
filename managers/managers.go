@@ -140,7 +140,7 @@ func GetManagerByID(tokenAPI string) func(c *gin.Context) {
 
 		var manager ManagerUser
 
-		err = db.QueryRow("SELECT * FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS WHERE Id_MANAGERS = " + id).Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS WHERE MANAGERS.Id_USERS = " + id).Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -272,97 +272,6 @@ func UpdateManager(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"error": false,
 			"message": "manager updated",
-		})
-		return
-	}
-}
-
-func LoginManager(tokenAPI string) func(c *gin.Context) {
-	return func(c *gin.Context) {
-
-		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "missing token",
-			})
-		}
-
-		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
-		if err != nil {
-			c.JSON(498, gin.H{
-				"error": true,
-				"message": "wrong token",
-			})
-			return
-		}
-
-		type Login struct {
-			Email string `json:"email"`
-			Password string `json:"password"`
-		}
-
-		var login Login
-
-		err = c.BindJSON(&login)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "bad json",
-			})
-			return
-		}
-
-		if !utils.IsSafeString(login.Email) || !utils.IsSafeString(login.Password) {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "bad json",
-			})
-			return
-		}
-
-		db, err := sql.Open("mysql", token.DbLogins)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "cannot connect to bdd",
-			})
-			return
-		}
-		defer db.Close()
-
-		var id int
-
-		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE email = '" + login.Email + "'").Scan(&id)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "email not found",
-			})
-			return
-		}
-
-		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "'").Scan(&id)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "wrong password",
-			})
-			return
-		}
-
-		err = db.QueryRow("SELECT Id_MANAGERS FROM MANAGERS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&id)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "user is not a manager",
-			})
-			return
-		}
-
-		c.JSON(200, gin.H{
-			"error": false,
-			"message": "login success",
 		})
 		return
 	}
