@@ -6,7 +6,7 @@ import (
 	"cook-master-api/clients"
 	"cook-master-api/contractors"
 	"cook-master-api/managers"
-	//"cook-master-api/events"
+	"cook-master-api/events"
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
@@ -44,11 +44,12 @@ func main() {
 		subscription.POST("/", subscriptions.PostSubscription(tokenAPI)) // WORKING
 		subscription.DELETE("/:id", subscriptions.DeleteSubscription(tokenAPI)) // WORKING
 		subscription.PATCH("/:id", subscriptions.UpdateSubscription(tokenAPI)) // WORKING
-	//event := r.Group("/event")
-		//event.GET("/all", events.GetEvents(tokenAPI)) // WORKING
-		//event.GET("/:id", events.GetEventByID(tokenAPI)) // WORKING
-		//event.GET("/groups/:id", events.GetEventByGroupID(tokenAPI)) // WORKING
-		//event.POST("/", events.PostEvent(tokenAPI)) // WORKING
+	event := r.Group("/event")
+		event.GET("/all", events.GetEvents(tokenAPI)) // WORKING
+		event.GET("/:id", events.GetEventByID(tokenAPI)) // WORKING
+		event.GET("/group/:id", events.GetEventsByGroupID(tokenAPI)) // WORKING
+		event.POST("/:id", events.PostEvent(tokenAPI)) // WORKING
+		event.POST("/group/:id", events.AddEventToAGroup(tokenAPI)) // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
 		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
