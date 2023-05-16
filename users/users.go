@@ -150,11 +150,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			FirstName string `json:"firstname"`
 			LastName string `json:"lastname"`
 			FidelityPoints int `json:"fidelitypoints"`
-			StreetName string `json:"streetname"`
 			Country string `json:"country"`
-			City string `json:"city"`
-			SteetNumber int `json:"streetnumber"`
-			PhoneNumber string `json:"phonenumber"`
 			Subscription int `json:"subscription"`
 			Presentation string `json:"presentation"`
 			IsItemManager bool `json:"isitemmanager"`
@@ -224,7 +220,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			if req.StreetName == "" || req.Country == "" || req.City == "" || req.SteetNumber <= 0 || req.PhoneNumber == "" || req.Subscription <= 0 || req.FidelityPoints < 0 {
+			if req.Country == "" || req.Subscription <= 0 || req.FidelityPoints < 0 {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "missing field",
@@ -232,15 +228,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
-			if len(req.StreetName) < 0 || len(req.StreetName) > 100 {
-				c.JSON(400, gin.H{
-					"error": true,
-					"message": "wrong streetname length",
-				})
-				return
-			}
-
-			if len(req.Country) < 0 || len(req.Country) > 50 {
+			if len(req.Country) < 0 || len(req.Country) > 100 {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "wrong country length",
@@ -248,30 +236,6 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
-			if len(req.City) < 0 || len(req.City) > 100 {
-				c.JSON(400, gin.H{
-					"error": true,
-					"message": "wrong city length",
-				})
-				return
-			}
-
-			if len(req.PhoneNumber) < 0 || len(req.PhoneNumber) > 25 {
-				c.JSON(400, gin.H{
-					"error": true,
-					"message": "wrong phonenumber length",
-				})
-				return
-			}
-
-			match, _ := regexp.MatchString("^[0-9]{10}$", req.PhoneNumber)
-			if !match {
-				c.JSON(400, gin.H{
-					"error": true,
-					"message": "wrong phonenumber format",
-				})
-				return
-			}
 		} else if typeOfUser[0] == "Manager" {
 			if req.IsItemManager == false && req.IsClientManager == false && req.IsContractorManager == false && req.IsSuperAdmin == false {
 				c.JSON(400, gin.H{
@@ -319,7 +283,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, '" + strconv.Itoa(req.FidelityPoints) + "', '" + req.StreetName + "', '" + req.Country + "', '" + req.City + "', '" + strconv.Itoa(req.SteetNumber) + "', '" + req.PhoneNumber + "', '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(conversationId, 10) + "')")
+			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, '" + strconv.Itoa(req.FidelityPoints) + "', NULL, '" + req.Country + "', NULL, NULL, NULL, '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(conversationId, 10) + "')")
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{

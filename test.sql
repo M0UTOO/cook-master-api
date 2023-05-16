@@ -111,7 +111,7 @@ CREATE TABLE CLIENTS(
    Id_CLIENTS INT AUTO_INCREMENT,
    fidelityPoints INT,
    streetName VARCHAR(100) ,
-   country VARCHAR(50) ,
+   country VARCHAR(100) ,
    city VARCHAR(100) ,
    streetNumber SMALLINT,
    phoneNumber VARCHAR(25) ,
