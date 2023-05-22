@@ -197,6 +197,17 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
+		var id int
+
+		err = db.QueryRow("SELECT Id_SUBSCRIPTIONS FROM SUBSCRIPTIONS WHERE name = ?", subscription.Name).Scan(&id)
+		if err == nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "subscription already exist",
+			})
+			return
+		}
+
 		_, err = db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture) VALUES (?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture)
 		if err != nil {
 			c.JSON(500, gin.H{

@@ -19,6 +19,9 @@ type User struct {
 	FirstName string `json:"firstname"`
 	LastName string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
+	IsCreatedAt string `json:"iscreatedat"`
+	LastSeen string `json:"lastseen"`
+	IsBlocked string `json:"isblocked"`
 }
 
 type Manager struct {
@@ -94,7 +97,7 @@ func GetUserByID(tokenAPI string) func(c *gin.Context) {
 
 		var user User
 
-		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -149,10 +152,12 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			Password string `json:"password"`
 			FirstName string `json:"firstname"`
 			LastName string `json:"lastname"`
-			FidelityPoints int `json:"fidelitypoints"`
 			Country string `json:"country"`
 			Subscription int `json:"subscription"`
 			Presentation string `json:"presentation"`
+			ContractStart string `json:"contractstart"`
+			ContractEnd string `json:"contractend"`
+			Type string `json:"type"`
 			IsItemManager bool `json:"isitemmanager"`
 			IsClientManager bool `json:"isclientmanager"`
 			IsContractorManager bool `json:"iscontractormanager"`
@@ -169,6 +174,16 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			})
 			return
 		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
 
 		if !utils.IsSafeString(req.Email) || !utils.IsSafeString(req.Password) || !utils.IsSafeString(req.FirstName) || !utils.IsSafeString(req.LastName) {
 			c.JSON(400, gin.H{
@@ -220,7 +235,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			if req.Country == "" || req.Subscription <= 0 || req.FidelityPoints < 0 {
+			if req.Country == "" || req.Subscription <= 0 {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "missing field",
@@ -236,6 +251,25 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
+			if !utils.IsSafeString(req.Country) {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "field can't contain sql injection",
+				})
+				return
+			}
+
+			var id int
+
+			err = db.QueryRow("SELECT Id_SUBSCRIPTIONS FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = '" + strconv.Itoa(req.Subscription) + "'").Scan(&id)
+			if err != nil {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong subscription id",
+				})
+				return
+			}
+
 		} else if typeOfUser[0] == "Manager" {
 			if req.IsItemManager == false && req.IsClientManager == false && req.IsContractorManager == false && req.IsSuperAdmin == false {
 				c.JSON(400, gin.H{
@@ -245,26 +279,33 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 		} else if typeOfUser[0] == "Contractor" {
-			if req.Presentation == "" {
+			if req.Presentation == "" || req.ContractStart == "" || req.ContractEnd == "" || req.Type == "" {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "missing field",
 				})
 				return
 			}
+
+			if len(req.Type) < 0 || len(req.Type) > 100 {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong type length",
+				})
+				return
+			}
+
+			if !utils.IsSafeString(req.Type) || !utils.IsSafeString(req.Presentation) || !utils.IsSafeString(req.ContractStart) || !utils.IsSafeString(req.ContractEnd) {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "field can't contain sql injection",
+				})
+				return
+			}
 		}
 
-		db, err := sql.Open("mysql", token.DbLogins)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": true,
-				"message": "cannot connect to bdd",
-			})
-			return
-		}
-		defer db.Close()
-
-		result, err := db.Exec("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', 'default.png')")
+		result, err := db.Exec("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', DEFAULT, DEFAULT, DEFAULT, DEFAULT)")
+		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -273,7 +314,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		conversationId, err := result.LastInsertId()
+		lastId, err := result.LastInsertId()
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -283,7 +324,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, '" + strconv.Itoa(req.FidelityPoints) + "', NULL, '" + req.Country + "', NULL, NULL, NULL, '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(conversationId, 10) + "')")
+			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', 0, '', '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(lastId, 10) + "')")
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -301,7 +342,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 
 		} else if typeOfUser[0] == "Manager" {
-			rows, err := db.Query("INSERT INTO MANAGERS VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(conversationId, 10))
+			rows, err := db.Query("INSERT INTO MANAGERS VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(lastId, 10))
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -318,7 +359,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 
 		} else if typeOfUser[0] == "Contractor" {
-			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + strconv.FormatInt(conversationId, 10) + "')")
+			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + req.Type + "', '" + strconv.FormatInt(lastId, 10) + "')")
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -483,6 +524,39 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, fmt.Sprintf("profilepicture = '%s'", req.ProfilePicture))
 		}
 
+		if req.IsCreatedAt != "" {
+			if utils.IsSafeString(req.IsCreatedAt) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong iscreatedat format",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("iscreatedat = '%s'", req.IsCreatedAt))
+		}
+
+		if req.LastSeen != "" {
+			if utils.IsSafeString(req.LastSeen) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong lastseen format",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("lastseen = '%s'", req.LastSeen))
+		}
+
+		if req.IsBlocked != "" {
+			if utils.IsSafeString(req.IsBlocked) == false {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong isblocked format",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("isblocked = '%s'", req.IsBlocked))
+		}
+
 		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
 				"error": true,
@@ -581,7 +655,7 @@ func GetUserByFilter(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var user User
-			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.ProfilePicture)
+			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -604,9 +678,6 @@ func GetUserByFilter(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
-
-
-
 
 func GetUsers(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
@@ -642,7 +713,7 @@ func GetUsers(tokenAPI string) func(c *gin.Context) {
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
-				"message": "user not found",
+				"message": "users not found",
 			})
 			return
 		}
@@ -651,11 +722,11 @@ func GetUsers(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var user User
-			err = rows.Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+			err = rows.Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
-					"message": "user not found",
+					"message": "err of scan rows",
 				})
 				return
 			}
@@ -743,12 +814,14 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		var idEntity int
+		var idSub int
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&idEntity)
+		err = db.QueryRow("SELECT Id_CLIENTS, Id_SUBSCRIPTIONS FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&idEntity, &idSub)
 		if err == nil {
 			c.JSON(200, gin.H{
 				"error": false,
 				"role": "client",
+				"subscription": idSub,
 				"id": id,
 			})
 			return

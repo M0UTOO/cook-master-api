@@ -25,6 +25,9 @@ type ManagerUser struct {
 	FirstName string `json:"firstname"`
 	LastName string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
+	IsCreatedAt string `json:"iscreatedat"`
+	LastSeen string `json:"lastseen"`
+	IsBlocked string `json:"isblocked"`
 	IdManager int `json:"idmanager"`
 	IsItemManager bool `json:"isitemmanager"`
 	IsClientManager bool `json:"isclientmanager"`
@@ -76,8 +79,9 @@ func GetManagers(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var manager ManagerUser
-			err = rows.Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture)
+			err = rows.Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture, &manager.IsCreatedAt, &manager.LastSeen, &manager.IsBlocked)
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "manager not found",
@@ -140,7 +144,7 @@ func GetManagerByID(tokenAPI string) func(c *gin.Context) {
 
 		var manager ManagerUser
 
-		err = db.QueryRow("SELECT * FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS WHERE MANAGERS.Id_USERS = " + id).Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS WHERE MANAGERS.Id_USERS = " + id).Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture, &manager.IsCreatedAt, &manager.LastSeen, &manager.IsBlocked)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,

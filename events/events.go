@@ -12,12 +12,14 @@ import (
 
 type Event struct {
 	IdEvent int `json:"idevent"`
+	Name string `json:"name"`
 	Type string `json:"type"`
 	EndTime string `json:"endtime"`
 	StartTime string `json:"starttime"`
 	IsInternal bool `json:"isinternal"`
 	IsPrivate bool `json:"isprivate"`
 	GroupDisplayOrder int `json:"groupdisplayorder"`
+	DefaultPicture string `json:"defaultpicture"`
 	IdGroups int `json:"idgroups"`
 }
 
@@ -65,7 +67,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Type, &event.EndTime, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.IdGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -133,7 +135,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 
 		var event Event
 
-		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Type, &event.EndTime, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.IdGroups)
+		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdGroups)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -210,7 +212,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Type, &event.EndTime, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.IdGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdGroups)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -278,6 +280,22 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
+		if !utils.IsSafeString(event.Name) || !utils.IsSafeString(event.Type) { 
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "name or type can't contain sql injection",
+			})
+			return
+		}
+
+		if event.Name == "" || event.Type == "" || event.EndTime == "" || event.StartTime == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "name or type or endtime or starttime can't be empty",
+			})
+			return
+		}
+
 		var idManager int
 
 		err = db.QueryRow("SELECT Id_MANAGERS FROM MANAGERS WHERE Id_USERS = '" + id + "'").Scan(&idManager)
@@ -302,7 +320,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
-		result, err := db.Exec("INSERT INTO EVENTS (Type, EndTime, StartTime, isInternal, isPrivate, group_display_order, Id_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?)", event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsPrivate, 0, 1)
+		result, err := db.Exec("INSERT INTO EVENTS (Name, Type, EndTime, StartTime, isInternal, isPrivate, group_display_order, DefaultPicture, Id_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsPrivate, 0, 1)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

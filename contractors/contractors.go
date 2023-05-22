@@ -5,12 +5,16 @@ import (
 	"cook-master-api/utils"
 	"database/sql"
 	"strings"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type Contractor struct {
 	Presentation string `json:"presentation"`
+	ContractStart string `json:"contractstart"`
+	ContractEnd string `json:"contractend"`
+	Type string `json:"type"`
 }
 
 type ContractorUser struct {
@@ -20,8 +24,14 @@ type ContractorUser struct {
 	FirstName string `json:"firstname"`
 	LastName string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
+	IsCreatedAt string `json:"iscreatedat"`
+	LastSeen string `json:"lastseen"`
+	IsBlocked string `json:"isblocked"`
 	IdContractor int `json:"idcontractor"`
 	Presentation string `json:"presentation"`
+	ContractStart string `json:"contractstart"`
+	ContractEnd string `json:"contractend"`
+	Type string `json:"type"`
 	IdUsers int `json:"idusers"`
 }
 
@@ -68,8 +78,9 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var contractor ContractorUser
-			err = rows.Scan(&contractor.IdContractor, &contractor.Presentation, &contractor.IdUsers, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture)
+			err = rows.Scan(&contractor.IdContractor, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdUsers, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "contractor not found",
@@ -132,8 +143,9 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 
 		var contractor ContractorUser
 
-		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_USERS = " + id).Scan(&contractor.Id, &contractor.Presentation, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_CONTRACTORS = " + id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "contractor not found",
@@ -207,6 +219,15 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 
 		if contractor.Presentation != "" || !utils.IsSafeString(contractor.Presentation) {
 			setClause = append(setClause, "Presentation = '" + contractor.Presentation + "'")
+		}
+		if contractor.ContractStart != "" || !utils.IsSafeString(contractor.ContractStart) {
+			setClause = append(setClause, "ContractStart = '" + contractor.ContractStart + "'")
+		}
+		if contractor.ContractEnd != "" || !utils.IsSafeString(contractor.ContractEnd) {
+			setClause = append(setClause, "ContractEnd = '" + contractor.ContractEnd + "'")
+		}
+		if contractor.Type != "" || !utils.IsSafeString(contractor.Type) {
+			setClause = append(setClause, "Type = '" + contractor.Type + "'")
 		}
 
 		if len(setClause) == 0 {

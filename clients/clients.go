@@ -18,6 +18,9 @@ type ClientUser struct {
 	FirstName string `json:"firstname"`
 	LastName string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
+	IsCreatedAt string `json:"iscreatedat"`
+	LastSeen string `json:"lastseen"`
+	IsBlocked bool `json:"isblocked"`
 	IdClient int `json:"idclient"`
 	FidelityPoints int `json:"fidelitypoints"`
 	StreetName string `json:"streetname"`
@@ -83,8 +86,9 @@ func GetClients(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var client ClientUser
-			err = rows.Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture)
+			err = rows.Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "client not found",
@@ -147,7 +151,7 @@ func GetClientByID(tokenAPI string) func(c *gin.Context) {
 
 		var client ClientUser
 
-		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
