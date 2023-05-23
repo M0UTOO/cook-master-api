@@ -8,6 +8,7 @@ import (
 	"cook-master-api/managers"
 	"cook-master-api/events"
 	"cook-master-api/premises"
+	"cook-master-api/cookingspaces"
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
@@ -64,6 +65,14 @@ func main() {
 		premise.POST("/", premises.PostPremise(tokenAPI)) // WORKING
 		premise.DELETE("/:id", premises.DeletePremise(tokenAPI)) // WORKING
 		premise.PATCH("/:id", premises.UpdatePremise(tokenAPI)) // WORKING
+	cookingSpace := r.Group("/cookingspace")
+		cookingSpace.GET("/all", cookingspaces.GetCookingSpaces(tokenAPI)) // WORKING
+		cookingSpace.GET("/:id", cookingspaces.GetCookingSpaceByID(tokenAPI)) // WORKING
+		cookingSpace.POST("/", cookingspaces.PostCookingSpace(tokenAPI)) // WORKING
+		cookingSpace.PATCH("/:id", cookingspaces.UpdateCookingSpace(tokenAPI)) // WORKING
+		cookingSpace.GET("/premise/:id", cookingspaces.GetCookingSpacesByPremiseID(tokenAPI)) // WORKING
+		cookingSpace.POST("/premise/:id", cookingspaces.AddCookingSpaceToAPremise(tokenAPI)) // WORKING
+		cookingSpace.DELETE("/premise/:id", cookingspaces.DeleteCookingSpaceFromAPremise(tokenAPI)) // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
 		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
