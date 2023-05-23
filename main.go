@@ -7,6 +7,7 @@ import (
 	"cook-master-api/contractors"
 	"cook-master-api/managers"
 	"cook-master-api/events"
+	"cook-master-api/premises"
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
@@ -57,6 +58,12 @@ func main() {
 		event.GET("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI)) // WORKING
 		event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI)) // WORKING
 		event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI)) // WORKING
+	premise := r.Group("/premise")
+		premise.GET("/all", premises.GetPremises(tokenAPI)) // WORKING
+		premise.GET("/:id", premises.GetPremiseByID(tokenAPI)) // WORKING
+		premise.POST("/", premises.PostPremise(tokenAPI)) // WORKING
+		premise.DELETE("/:id", premises.DeletePremise(tokenAPI)) // WORKING
+		premise.PATCH("/:id", premises.UpdatePremise(tokenAPI)) // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
 		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
