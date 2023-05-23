@@ -50,6 +50,13 @@ func main() {
 		event.GET("/group/:id", events.GetEventsByGroupID(tokenAPI)) // WORKING
 		event.POST("/:id", events.PostEvent(tokenAPI)) // WORKING
 		event.POST("/group/:id", events.AddEventToAGroup(tokenAPI)) // WORKING
+		event.DELETE("/group/:id", events.DeleteEventFromAGroup(tokenAPI)) // WORKING
+		event.PATCH("/:id", events.UpdateEvent(tokenAPI)) // WORKING
+		event.GET("/animate/:idevent/:iduser", events.AddContractorToAnEvent(tokenAPI)) // WORKING
+		event.DELETE("/animate/:idevent/:iduser", events.DeleteContractorFromAnEvent(tokenAPI)) // WORKING
+		event.GET("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI)) // WORKING
+		event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI)) // WORKING
+		event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI)) // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
 		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))

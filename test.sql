@@ -169,7 +169,7 @@ CREATE TABLE EVENTS(
    isInternal BOOLEAN,
    isPrivate BOOLEAN,
    group_display_order INT,
-   defaultPicture VARCHAR(255) ,
+   defaultPicture VARCHAR(255)  DEFAULT 'default.jpg',
    Id_GROUPS INT,
    PRIMARY KEY(Id_EVENTS),
    UNIQUE(name),
