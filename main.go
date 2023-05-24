@@ -9,6 +9,8 @@ import (
 	"cook-master-api/events"
 	"cook-master-api/premises"
 	"cook-master-api/cookingspaces"
+	"cook-master-api/cookingitems"
+	"cook-master-api/ingredients"
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
@@ -73,6 +75,20 @@ func main() {
 		cookingSpace.GET("/premise/:id", cookingspaces.GetCookingSpacesByPremiseID(tokenAPI)) // WORKING
 		cookingSpace.POST("/premise/:id", cookingspaces.AddCookingSpaceToAPremise(tokenAPI)) // WORKING
 		cookingSpace.DELETE("/premise/:id", cookingspaces.DeleteCookingSpaceFromAPremise(tokenAPI)) // WORKING
+	cookingItem := r.Group("/cookingitem")
+		cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI)) // WORKING
+		cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI)) // WORKING
+		cookingItem.POST("/", cookingitems.PostCookingItem(tokenAPI)) // WORKING
+		cookingItem.DELETE("/:id", cookingitems.DeleteCookingItem(tokenAPI)) // WORKING
+		cookingItem.PATCH("/:id", cookingitems.UpdateCookingItem(tokenAPI)) // WORKING
+		cookingItem.GET("/cookingspace/:id", cookingitems.GetCookingItemsByCookingSpaceID(tokenAPI)) // WORKING
+	ingredient := r.Group("/ingredient")
+		ingredient.GET("/all", ingredients.GetIngredients(tokenAPI)) // WORKING
+		ingredient.GET("/:id", ingredients.GetIngredientByID(tokenAPI)) // WORKING
+		ingredient.POST("/", ingredients.PostIngredient(tokenAPI)) // WORKING
+		ingredient.DELETE("/:id", ingredients.DeleteIngredient(tokenAPI)) // WORKING
+		ingredient.PATCH("/:id", ingredients.UpdateIngredient(tokenAPI)) // WORKING
+		ingredient.GET("/cookingspace/:id", ingredients.GetIngredientsByCookingSpaceID(tokenAPI)) // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 		//conversation.POST("/", conversations.PostConversations(tokenAPI))
 		//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
