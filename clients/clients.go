@@ -206,6 +206,8 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 
 		var client Client
 
+		client.FidelityPoints = -1
+
 		err = c.BindJSON(&client)
 		if err != nil {
 			c.JSON(400, gin.H{
@@ -237,13 +239,13 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 		if client.City != "" {
 			setClause = append(setClause, "City = '"+client.City+"'")
 		}
-		if client.SteetNumber >= 0 {
+		if client.SteetNumber > 0 {
 			setClause = append(setClause, "StreetNumber = '"+strconv.Itoa(client.SteetNumber)+"'")
 		}
 		if client.PhoneNumber != "" {
 			setClause = append(setClause, "PhoneNumber = '"+client.PhoneNumber+"'")
 		}
-		if client.Subscription >= 0 {
+		if client.Subscription > 0 {
 			setClause = append(setClause, "Id_SUBSCRIPTIONS = '"+strconv.Itoa(client.Subscription)+"'")
 		}
 
@@ -265,7 +267,7 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		_, err = db.Exec("UPDATE CLIENTS SET " + strings.Join(setClause, ", ") + " WHERE Id_CLIENTS = " + id)
+		_, err = db.Exec("UPDATE CLIENTS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS = " + id)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

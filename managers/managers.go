@@ -162,6 +162,13 @@ func GetManagerByID(tokenAPI string) func(c *gin.Context) {
 func UpdateManager(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
+		type Manager struct {
+			IsItemManager int `json:"isitemmanager"`
+			IsClientManager int `json:"isclientmanager"`
+			IsContractorManager int `json:"iscontractormanager"`
+			IsSuperAdmin int `json:"issuperadmin"`
+		}
+
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil{
 			c.JSON(498, gin.H{
@@ -198,6 +205,11 @@ func UpdateManager(tokenAPI string) func(c *gin.Context) {
 
 		var manager Manager
 
+		manager.IsItemManager = -1
+		manager.IsClientManager = -1
+		manager.IsContractorManager = -1
+		manager.IsSuperAdmin = -1
+
 		err = c.BindJSON(&manager)
 		if err != nil {
 			c.JSON(400, gin.H{
@@ -209,29 +221,28 @@ func UpdateManager(tokenAPI string) func(c *gin.Context) {
 
 		var setClause []string
 
-		if manager.IsItemManager == true {
-			setClause = append(setClause, "isItemManager = 1")
+		if manager.IsItemManager == 0 {
+			setClause = append(setClause, "isitemmanager = false")
+		} else if manager.IsItemManager == 1 {
+			setClause = append(setClause, "isitemmanager = true")
 		}
-		if manager.IsItemManager == false {
-			setClause = append(setClause, "isItemManager = 0")
+
+		if manager.IsClientManager == 0 {
+			setClause = append(setClause, "isclientmanager = false")
+		} else if manager.IsClientManager == 1 {
+			setClause = append(setClause, "isclientmanager = true")
 		}
-		if manager.IsClientManager == true {
-			setClause = append(setClause, "isClientManager = 1")
+
+		if manager.IsContractorManager == 0 {
+			setClause = append(setClause, "iscontractormanager = false")
+		} else if manager.IsContractorManager == 1 {
+			setClause = append(setClause, "iscontractormanager = true")
 		}
-		if manager.IsClientManager == false {
-			setClause = append(setClause, "isClientManager = 0")
-		}
-		if manager.IsContractorManager == true {
-			setClause = append(setClause, "isContractorManager = 1")
-		}
-		if manager.IsContractorManager == false {
-			setClause = append(setClause, "isContractorManager = 0")
-		}
-		if manager.IsSuperAdmin == true {
-			setClause = append(setClause, "isSuperAdmin = 1")
-		}
-		if manager.IsSuperAdmin == false {
-			setClause = append(setClause, "isSuperAdmin = 0")
+
+		if manager.IsSuperAdmin == 0 {
+			setClause = append(setClause, "issuperadmin = false")
+		} else if manager.IsSuperAdmin == 1 {
+			setClause = append(setClause, "issuperadmin = true")
 		}
 
 		if len(setClause) == 0 {
@@ -254,7 +265,7 @@ func UpdateManager(tokenAPI string) func(c *gin.Context) {
 
 		var idmanager int
 
-		err = db.QueryRow("SELECT Id_MANAGERS FROM MANAGERS WHERE Id_MANAGERS = '" + id + "'").Scan(&idmanager)
+		err = db.QueryRow("SELECT Id_MANAGERS FROM MANAGERS WHERE Id_USERS = '" + id + "'").Scan(&idmanager)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -263,7 +274,7 @@ func UpdateManager(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("UPDATE MANAGERS SET " + strings.Join(setClause, ", ") + " WHERE Id_MANAGERS = " + id)
+		_, err = db.Exec("UPDATE MANAGERS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS = " + id)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

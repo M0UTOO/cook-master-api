@@ -392,7 +392,7 @@ func UpdatePremise(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "name = '"+req.Name+"'")
 		}
 
-		if req.StreetNumber >= 0 {
+		if req.StreetNumber > 0 {
 			setClause = append(setClause, "streetnumber = '"+strconv.Itoa(req.StreetNumber)+"'")
 		}
 

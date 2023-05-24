@@ -143,7 +143,7 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 
 		var contractor ContractorUser
 
-		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_CONTRACTORS = " + id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
+		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_USERS = " + id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -250,7 +250,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 
 		var idcontractor int
 
-		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_CONTRACTORS = '" + id + "'").Scan(&idcontractor)
+		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + id + "'").Scan(&idcontractor)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -259,7 +259,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("UPDATE CONTRACTORS SET " + strings.Join(setClause, ", ") + " WHERE Id_CONTRACTORS = " + id)
+		_, err = db.Exec("UPDATE CONTRACTORS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS = " + id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,

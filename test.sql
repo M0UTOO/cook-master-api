@@ -7,7 +7,7 @@ CREATE TABLE USERS(
    profilePicture VARCHAR(100)  DEFAULT 'default.jpg',
    isCreatedAt DATETIME NOT NULL DEFAULT NOW(),
    lastSeen DATETIME NOT NULL DEFAULT NOW(),
-   isBlocked BOOLEAN NOT NULL DEFAULT FALSE,
+   isBlocked VARCHAR(100)  NOT NULL DEFAULT 'not blocked',
    PRIMARY KEY(Id_USERS),
    UNIQUE(email)
 );

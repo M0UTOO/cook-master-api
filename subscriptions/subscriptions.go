@@ -338,6 +338,8 @@ func UpdateSubscription(tokenAPI string) func(c *gin.Context) {
 
 		var req Subscription
 
+		req.Price = -1
+
 		err = c.BindJSON(&req)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -360,11 +362,11 @@ func UpdateSubscription(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "name = '"+req.Name+"'")
 		}
 
-		if req.Price != 0 {
+		if req.Price >= 0 {
 			setClause = append(setClause, "price = "+strconv.FormatFloat(req.Price, 'f', 2, 64))
 		}
 
-		if req.MaxLessonAccess != 0 {
+		if req.MaxLessonAccess > 0 {
 			setClause = append(setClause, "max_lesson_access = "+strconv.Itoa(req.MaxLessonAccess))
 		}
 

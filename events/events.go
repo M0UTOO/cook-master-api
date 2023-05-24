@@ -393,10 +393,20 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 		var group Group
 		c.BindJSON(&group)
 
-		if !utils.IsSafeString(group.Name) {
+		if group.Name != "" {
+			if !utils.IsSafeString(group.Name) {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "name can't contain sql injection",
+				})
+				return
+			}
+		}
+
+		if group.GroupDisplayOrder <= 0 {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "name can't contain sql injection",
+				"message": "group_display_order can't be empty or negative",
 			})
 			return
 		}
@@ -541,6 +551,17 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 
 func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
+
+		type EventReq struct {
+			Name string `json:"name"`
+			Type string `json:"type"`
+			EndTime string `json:"endtime"`
+			IsClosed int `json:"isclosed"`
+			StartTime string `json:"starttime"`
+			IsInternal int `json:"isinternal"`
+			IsPrivate int `json:"isprivate"`
+			DefaultPicture string `json:"defaultpicture"`
+		}
 		
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil{
@@ -576,7 +597,11 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var event Event
+		var event EventReq
+
+		event.IsClosed = -1
+		event.IsInternal = -1
+		event.IsPrivate = -1
 
 		err = c.BindJSON(&event)	
 		if err != nil {
@@ -636,8 +661,10 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "endtime = '"+event.EndTime+"'")
 		}
 
-		if event.IsClosed == false || event.IsClosed == true {
-			setClause = append(setClause, "isclosed = "+strconv.FormatBool(event.IsClosed))
+		if event.IsClosed == 0 {
+			setClause = append(setClause, "isclosed = false")
+		} else if event.IsClosed == 1 {
+			setClause = append(setClause, "isclosed = true")
 		}
 
 		if event.StartTime != "" {
@@ -651,12 +678,16 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "starttime = '"+event.StartTime+"'")
 		}
 
-		if event.IsInternal == false || event.IsInternal == true {
-			setClause = append(setClause, "isinternal = "+strconv.FormatBool(event.IsInternal))
+		if event.IsInternal == 0 {
+			setClause = append(setClause, "isinternal = false")
+		} else if event.IsInternal == 1 {
+			setClause = append(setClause, "isinternal = true")
 		}
 
-		if event.IsPrivate == false || event.IsPrivate == true {
-			setClause = append(setClause, "isprivate = "+strconv.FormatBool(event.IsPrivate))
+		if event.IsPrivate == 0 {
+			setClause = append(setClause, "isprivate = false")
+		} else if event.IsPrivate == 1 {
+			setClause = append(setClause, "isprivate = true")
 		}
 
 		if event.DefaultPicture != "" {

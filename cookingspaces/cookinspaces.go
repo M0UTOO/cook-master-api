@@ -472,6 +472,14 @@ func DeleteCookingSpaceFromAPremise(tokenAPI string) func(c *gin.Context) {
 
 func UpdateCookingSpace(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
+
+		type CookingSpaceReq struct {
+			Name string `json:"name"`
+			Size int `json:"size"`
+			IsAvailable int `json:"isAvailable"`
+			PricePerHour float64 `json:"pricePerHour"`
+		}
+		
 		
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil{
@@ -507,7 +515,9 @@ func UpdateCookingSpace(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var cookingspace CookingSpace
+		var cookingspace CookingSpaceReq
+
+		cookingspace.IsAvailable = -1
 
 		err = c.BindJSON(&cookingspace)	
 		if err != nil {
@@ -542,8 +552,10 @@ func UpdateCookingSpace(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "size = '"+strconv.Itoa(cookingspace.Size)+"'")
 		}
 		
-		if cookingspace.IsAvailable == true || cookingspace.IsAvailable == false {
-			setClause = append(setClause, "isAvailable = '"+strconv.FormatBool(cookingspace.IsAvailable)+"'")
+		if cookingspace.IsAvailable == 0 {
+			setClause = append(setClause, "isAvailable = false")
+		} else if cookingspace.IsAvailable == 1 {
+			setClause = append(setClause, "isAvailable = true")
 		}
 
 		if cookingspace.PricePerHour > 0 {
