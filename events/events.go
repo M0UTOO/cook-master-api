@@ -26,6 +26,11 @@ type Event struct {
 	IdGroups          int    `json:"idgroups"`
 }
 
+type Books struct {
+	StartTime string `json:"starttime"`
+	EndTime   string `json:"endtime"`
+}
+
 func GetEvents(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
