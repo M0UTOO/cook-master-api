@@ -7,10 +7,12 @@ import (
 	"cook-master-api/cookingspaces"
 	"cook-master-api/events"
 	"cook-master-api/ingredients"
+	"cook-master-api/lessons"
 	"cook-master-api/managers"
 	"cook-master-api/premises"
 	"cook-master-api/token"
 	"cook-master-api/users"
+	"cook_master-api/lessons"
 
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
@@ -95,6 +97,13 @@ func main() {
 	ingredient.DELETE("/:id", ingredients.DeleteIngredient(tokenAPI))                         // WORKING
 	ingredient.PATCH("/:id", ingredients.UpdateIngredient(tokenAPI))                          // WORKING
 	ingredient.GET("/cookingspace/:id", ingredients.GetIngredientsByCookingSpaceID(tokenAPI)) // WORKING
+	lesson := r.Group("/lesson")
+	lesson.GET("/all", lessons.GetLessons(tokenAPI))                      // MUST BE TESTED
+	lesson.GET("/:id", lessons.GetLessonByID(tokenAPI))                   // MUST BE TESTED
+	lesson.GET("/group/:id", lessons.GetLessonsByGroupID(tokenAPI))       // MUST BE TESTED
+	lesson.POST("/", lessons.Postlesson(tokenAPI))                        // MUST BE TESTED
+	lesson.POST("/group/:id", lessons.AddLessonToAGroup(tokenAPI))        // MUST BE TESTED
+	lesson.DELETE("/group/:id", lessons.DeleteLessonFromAGroup(tokenAPI)) // MUST BE TESTED
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))

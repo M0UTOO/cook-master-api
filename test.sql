@@ -207,10 +207,10 @@ CREATE TABLE ORDERS(
 
 CREATE TABLE LESSONS(
    Id_LESSONS INT AUTO_INCREMENT,
-   content TEXT,
    name VARCHAR(50) ,
+   content TEXT,
    description VARCHAR(50) ,
-   level TINYINT,
+   difficulty TINYINT,
    group_display_order INT,
    Id_LESSONS_GROUPS INT,
    PRIMARY KEY(Id_LESSONS),
