@@ -1,37 +1,38 @@
 package events
 
 import (
-	"fmt"
-	"database/sql"
-	"strconv"
-	"strings"
 	"cook-master-api/token"
 	"cook-master-api/utils"
+	"database/sql"
+	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type Event struct {
-	IdEvent int `json:"idevent"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-	EndTime string `json:"endtime"`
-	IsClosed bool `json:"isclosed"`
-	StartTime string `json:"starttime"`
-	IsInternal bool `json:"isinternal"`
-	IsPrivate bool `json:"isprivate"`
-	GroupDisplayOrder int `json:"groupdisplayorder"`
-	DefaultPicture string `json:"defaultpicture"`
-	IdGroups int `json:"idgroups"`
+	IdEvent           int    `json:"idevent"`
+	Name              string `json:"name"`
+	Type              string `json:"type"`
+	EndTime           string `json:"endtime"`
+	IsClosed          bool   `json:"isclosed"`
+	StartTime         string `json:"starttime"`
+	IsInternal        bool   `json:"isinternal"`
+	IsPrivate         bool   `json:"isprivate"`
+	GroupDisplayOrder int    `json:"groupdisplayorder"`
+	DefaultPicture    string `json:"defaultpicture"`
+	IdGroups          int    `json:"idgroups"`
 }
 
 func GetEvents(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -39,7 +40,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -48,7 +49,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -58,7 +59,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 		rows, err := db.Query("SELECT * FROM EVENTS")
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot get events",
 			})
 			return
@@ -73,7 +74,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "err on scan rows",
 				})
 				return
@@ -89,9 +90,9 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -99,7 +100,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -108,7 +109,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -116,7 +117,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -125,7 +126,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -137,7 +138,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdGroups)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot get event",
 			})
 			return
@@ -151,9 +152,9 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -161,7 +162,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -170,7 +171,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -178,7 +179,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -187,7 +188,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -197,7 +198,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 		rows, err := db.Query("SELECT * FROM EVENTS WHERE Id_GROUPS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot get events",
 			})
 			return
@@ -211,7 +212,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdGroups)
 			if err != nil {
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "cannot get events",
 				})
 				return
@@ -227,9 +228,9 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -237,7 +238,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -246,7 +247,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -254,7 +255,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -266,16 +267,16 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
 		}
 		defer db.Close()
 
-		if !utils.IsSafeString(event.Name) || !utils.IsSafeString(event.Type) { 
+		if !utils.IsSafeString(event.Name) || !utils.IsSafeString(event.Type) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "name or type can't contain sql injection",
 			})
 			return
@@ -283,7 +284,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 
 		if event.Name == "" || event.Type == "" || event.EndTime == "" || event.StartTime == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "name or type or endtime or starttime can't be empty",
 			})
 			return
@@ -294,7 +295,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT Id_MANAGERS FROM MANAGERS WHERE Id_USERS = '" + id + "'").Scan(&idManager)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot get manager",
 			})
 			return
@@ -306,7 +307,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 			fmt.Println(err)
 			if err != nil {
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "cannot insert group",
 				})
 				return
@@ -317,7 +318,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot insert event",
 			})
 			return
@@ -326,7 +327,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		lastId, err := result.LastInsertId()
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot get last id",
 			})
 			return
@@ -335,14 +336,14 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		result, err = db.Exec("INSERT INTO ORGANIZES (Id_MANAGERS, Id_EVENTS) VALUES (?, ?)", idManager, lastId)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot insert organizes",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "event inserted",
 		})
 	}
@@ -352,9 +353,9 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -362,7 +363,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -371,7 +372,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -379,15 +380,15 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
 		}
 
 		type Group struct {
-			Name string `json:"name"`
-			GroupDisplayOrder int `json:"group_display_order"`
+			Name              string `json:"name"`
+			GroupDisplayOrder int    `json:"group_display_order"`
 		}
 
 		var group Group
@@ -396,7 +397,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 		if group.Name != "" {
 			if !utils.IsSafeString(group.Name) {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "name can't contain sql injection",
 				})
 				return
@@ -405,7 +406,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 
 		if group.GroupDisplayOrder <= 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "group_display_order can't be empty or negative",
 			})
 			return
@@ -414,7 +415,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -428,7 +429,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 			result, err := db.Exec("INSERT INTO GROUPS (name) VALUES (?)", group.Name)
 			if err != nil {
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "cannot insert group",
 				})
 				return
@@ -437,7 +438,7 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 			lastId, err := result.LastInsertId()
 			if err != nil {
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "cannot get last id",
 				})
 				return
@@ -446,14 +447,14 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 			result, err = db.Exec("UPDATE EVENTS SET Id_GROUPS = ?, group_display_order = ? WHERE Id_EVENTS = ?", lastId, group.GroupDisplayOrder, id)
 			if err != nil {
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "cannot update event",
 				})
 				return
 			}
 
 			c.JSON(200, gin.H{
-				"error": false,
+				"error":   false,
 				"message": "event added to group",
 			})
 			return
@@ -466,21 +467,21 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 			_, err := db.Exec("UPDATE EVENTS SET Id_GROUPS = ?, group_display_order = ? WHERE Id_EVENTS = ?", idGroup, group.GroupDisplayOrder, id)
 			if err != nil {
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "cannot update event",
 				})
 				return
 			}
 
 			c.JSON(200, gin.H{
-				"error": false,
+				"error":   false,
 				"message": "event added to group",
 			})
 			return
 		}
 
 		c.JSON(500, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "an event is already in this group with this display order",
 		})
 	}
@@ -490,9 +491,9 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -500,7 +501,7 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -509,7 +510,7 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -517,7 +518,7 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -526,7 +527,7 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -536,14 +537,14 @@ func DeleteEventFromAGroup(tokenAPI string) func(c *gin.Context) {
 		_, err = db.Exec("UPDATE EVENTS SET Id_GROUPS = 1, group_display_order = 0 WHERE Id_EVENTS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot update event",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "event deleted from group",
 		})
 	}
@@ -553,20 +554,20 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		type EventReq struct {
-			Name string `json:"name"`
-			Type string `json:"type"`
-			EndTime string `json:"endtime"`
-			IsClosed int `json:"isclosed"`
-			StartTime string `json:"starttime"`
-			IsInternal int `json:"isinternal"`
-			IsPrivate int `json:"isprivate"`
+			Name           string `json:"name"`
+			Type           string `json:"type"`
+			EndTime        string `json:"endtime"`
+			IsClosed       int    `json:"isclosed"`
+			StartTime      string `json:"starttime"`
+			IsInternal     int    `json:"isinternal"`
+			IsPrivate      int    `json:"isprivate"`
 			DefaultPicture string `json:"defaultpicture"`
 		}
-		
+
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -574,7 +575,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -583,7 +584,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -591,7 +592,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -603,10 +604,10 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		event.IsInternal = -1
 		event.IsPrivate = -1
 
-		err = c.BindJSON(&event)	
+		err = c.BindJSON(&event)
 		if err != nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot bind json",
 			})
 			return
@@ -617,14 +618,14 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		if event.Name != "" {
 			if !utils.IsSafeString(event.Name) {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "name can't contain sql injection",
 				})
 				return
 			}
 			if len(event.Name) < 0 || len(event.Name) > 100 {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "wrong name length",
 				})
 				return
@@ -635,14 +636,14 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		if event.Type != "" {
 			if !utils.IsSafeString(event.Type) {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "type can't contain sql injection",
 				})
 				return
 			}
 			if len(event.Type) < 0 || len(event.Type) > 50 {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "wrong type length",
 				})
 				return
@@ -653,7 +654,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		if event.EndTime != "" {
 			if !utils.IsSafeString(event.EndTime) {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "end time can't contain sql injection",
 				})
 				return
@@ -670,7 +671,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		if event.StartTime != "" {
 			if !utils.IsSafeString(event.StartTime) {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "start time can't contain sql injection",
 				})
 				return
@@ -693,14 +694,14 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		if event.DefaultPicture != "" {
 			if !utils.IsSafeString(event.DefaultPicture) {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "default picture can't contain sql injection",
 				})
 				return
 			}
 			if len(event.DefaultPicture) < 0 || len(event.DefaultPicture) > 255 {
 				c.JSON(400, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "wrong default picture length",
 				})
 				return
@@ -710,7 +711,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 
 		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "no field to update",
 			})
 			return
@@ -719,7 +720,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -727,11 +728,11 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idevent string
-		
+
 		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + id + "'").Scan(&idevent)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "event not found",
 			})
 			return
@@ -741,14 +742,14 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot update event",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "event updated",
 		})
 	}
@@ -760,7 +761,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if len(tokenHeader) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -768,7 +769,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -777,7 +778,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		idEvent := c.Param("idevent")
 		if idEvent == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't be empty",
 			})
 			return
@@ -785,7 +786,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(idEvent) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't contain sql injection",
 			})
 			return
@@ -794,7 +795,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		iduser := c.Param("iduser")
 		if iduser == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id contractor can't be empty",
 			})
 			return
@@ -802,7 +803,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(iduser) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id contractor can't contain sql injection",
 			})
 			return
@@ -811,7 +812,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -819,22 +820,22 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idevent string
-		
+
 		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "event not found",
 			})
 			return
 		}
 
 		var idcontractor string
-		
+
 		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + iduser + "'").Scan(&idcontractor)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor not found",
 			})
 			return
@@ -845,7 +846,7 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT Id_EVENTS FROM ANIMATES WHERE Id_CONTRACTORS = '" + idcontractor + "' AND Id_EVENTS = '" + idevent + "'").Scan(&idanimates)
 		if err == nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor already added to event",
 			})
 			return
@@ -855,14 +856,14 @@ func AddContractorToAnEvent(tokenAPI string) func(c *gin.Context) {
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot insert animates",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "contractor added to event",
 		})
 	}
@@ -874,7 +875,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if len(tokenHeader) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -882,7 +883,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -891,7 +892,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		idEvent := c.Param("idevent")
 		if idEvent == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't be empty",
 			})
 			return
@@ -899,7 +900,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(idEvent) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't contain sql injection",
 			})
 			return
@@ -908,7 +909,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		iduser := c.Param("iduser")
 		if iduser == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id contractor can't be empty",
 			})
 			return
@@ -916,7 +917,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(iduser) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id contractor can't contain sql injection",
 			})
 			return
@@ -925,7 +926,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -933,22 +934,22 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idevent string
-		
+
 		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "event not found",
 			})
 			return
 		}
 
 		var idcontractor string
-		
+
 		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + iduser + "'").Scan(&idcontractor)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor not found",
 			})
 			return
@@ -959,7 +960,7 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT Id_EVENTS FROM ANIMATES WHERE Id_CONTRACTORS = '" + idcontractor + "' AND Id_EVENTS = '" + idevent + "'").Scan(&idanimates)
 		if err != nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor not added to event",
 			})
 			return
@@ -969,14 +970,14 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot delete animates",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "contractor removed from event",
 		})
 	}
@@ -988,7 +989,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if len(tokenHeader) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -996,7 +997,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -1005,7 +1006,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		idEvent := c.Param("idevent")
 		if idEvent == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't be empty",
 			})
 			return
@@ -1013,7 +1014,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(idEvent) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't contain sql injection",
 			})
 			return
@@ -1022,7 +1023,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		iduser := c.Param("iduser")
 		if iduser == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id client can't be empty",
 			})
 			return
@@ -1030,7 +1031,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(iduser) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id client can't contain sql injection",
 			})
 			return
@@ -1039,7 +1040,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -1047,22 +1048,22 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idevent string
-		
+
 		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "event not found",
 			})
 			return
 		}
 
 		var idclient string
-		
+
 		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + iduser + "'").Scan(&idclient)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client not found",
 			})
 			return
@@ -1073,7 +1074,7 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT Id_EVENTS FROM PARTICIPATES WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS = '" + idevent + "'").Scan(&idclients)
 		if err == nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client already added to event",
 			})
 			return
@@ -1083,14 +1084,14 @@ func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot add participates",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "client added to event",
 		})
 	}
@@ -1102,7 +1103,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if len(tokenHeader) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -1110,7 +1111,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -1119,7 +1120,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		idEvent := c.Param("idevent")
 		if idEvent == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't be empty",
 			})
 			return
@@ -1127,7 +1128,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(idEvent) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't contain sql injection",
 			})
 			return
@@ -1136,7 +1137,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		iduser := c.Param("iduser")
 		if iduser == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id client can't be empty",
 			})
 			return
@@ -1144,7 +1145,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(iduser) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id client can't contain sql injection",
 			})
 			return
@@ -1153,7 +1154,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -1161,22 +1162,22 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idevent string
-		
+
 		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "event not found",
 			})
 			return
 		}
 
 		var idclient string
-		
+
 		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + iduser + "'").Scan(&idclient)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client not found",
 			})
 			return
@@ -1187,7 +1188,7 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT Id_EVENTS FROM PARTICIPATES WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS = '" + idevent + "'").Scan(&idclients)
 		if err != nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client not added to event",
 			})
 			return
@@ -1197,14 +1198,14 @@ func DeleteClientFromAnEvent(tokenAPI string) func(c *gin.Context) {
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot remove participates",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "client removed from event",
 		})
 	}
@@ -1216,7 +1217,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 
 		if len(tokenHeader) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -1224,7 +1225,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -1233,7 +1234,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		idEvent := c.Param("idevent")
 		if idEvent == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't be empty",
 			})
 			return
@@ -1241,7 +1242,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(idEvent) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id event can't contain sql injection",
 			})
 			return
@@ -1250,7 +1251,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		iduser := c.Param("iduser")
 		if iduser == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id client can't be empty",
 			})
 			return
@@ -1258,7 +1259,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(iduser) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id client can't contain sql injection",
 			})
 			return
@@ -1267,7 +1268,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -1275,22 +1276,22 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idevent string
-		
+
 		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "event not found",
 			})
 			return
 		}
 
 		var idclient string
-		
+
 		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + iduser + "'").Scan(&idclient)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client not found",
 			})
 			return
@@ -1301,7 +1302,7 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT IsPresent FROM PARTICIPATES WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS = '" + idevent + "'").Scan(&ispresent)
 		if err != nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client not added to event",
 			})
 			return
@@ -1309,24 +1310,252 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 
 		if ispresent {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "client already validated",
 			})
 			return
 		}
 
-		_, err = db.Exec("UPDATE PARTICIPATES SET IsPresent = ? WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS = '" + idevent + "'", true)
-			if err != nil {
-				c.JSON(500, gin.H{
-					"error": true,
-					"message": "cannot update participates",
-				})
-				return
-			}
+		_, err = db.Exec("UPDATE PARTICIPATES SET IsPresent = ? WHERE Id_CLIENTS = '"+idclient+"' AND Id_EVENTS = '"+idevent+"'", true)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot update participates",
+			})
+			return
+		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "client presence validated",
+		})
+	}
+}
+
+func AddEventToAnCookingSpace(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idEvent := c.Param("idevent")
+		if idEvent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idEvent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		idcooking := c.Param("idcooking")
+		if idcooking == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idcooking can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idcooking) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idcooking can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idevent string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var idcookingspace string
+
+		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = '" + idcooking + "'").Scan(&idcookingspace)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cookingspace not found",
+			})
+			return
+		}
+
+		var idishosted string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM IS_HOSTED WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_EVENTS = '" + idevent + "'").Scan(&idishosted)
+		if err == nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "cookingspace already added to event",
+			})
+			return
+		}
+
+		_, err = db.Exec("INSERT INTO IS_HOSTED (Id_COOKING_SPACES, Id_EVENTS) VALUES (?, ?)", idcookingspace, idevent)
+		fmt.Println(err)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot insert ishosted",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "cookingspace added to event",
+		})
+	}
+}
+
+func DeleteEventToAnCookingSpace(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idEvent := c.Param("idevent")
+		if idEvent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idEvent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		idcooking := c.Param("idcooking")
+		if idcooking == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idcooking can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idcooking) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idcooking can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idevent string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var idcookingspace string
+
+		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = '" + idcooking + "'").Scan(&idcookingspace)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cookingspace not found",
+			})
+			return
+		}
+
+		var idishosted string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM IS_HOSTED WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_EVENTS = '" + idevent + "'").Scan(&idishosted)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "event not added to the cookingspace",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM IS_HOSTED WHERE Id_EVENT = '" + idEvent + "' AND Id_COOKING_SPACES = '" + idcooking + "'")
+		fmt.Println(err)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot delete ishosted",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "cookingspace delete from event",
 		})
 	}
 }
