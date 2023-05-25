@@ -324,7 +324,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			rows, err := db.Query("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', 0, '', '" + strconv.Itoa(req.Subscription) + "', '" + strconv.FormatInt(lastId, 10) + "')")
+			rows, err := db.Exec("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', 0, '', '" + strconv.FormatInt(lastId, 10) + "')")
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -333,7 +333,24 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				})
 				return
 			}
-			defer rows.Close()
+
+			lastIdClient, err := rows.LastInsertId()
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot get client id",
+				})
+				return
+			}
+
+			_, err = db.Query("INSERT INTO IS_SUBSCRIBED VALUES(?, ?, DATE_ADD(NOW(), INTERVAL 1 MONTH))", strconv.FormatInt(lastIdClient, 10), strconv.Itoa(req.Subscription))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot insert client subscription",
+				})
+				return
+			}
 
 			c.JSON(200, gin.H{
 				"error": false,
@@ -816,7 +833,8 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 		var idEntity int
 		var idSub int
 
-		err = db.QueryRow("SELECT Id_CLIENTS, Id_SUBSCRIPTIONS FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&idEntity, &idSub)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&idEntity)
+		err = db.QueryRow("SELECT Id_SUBSCRIPTIONS FROM IS_SUBSCRIBED WHERE Id_CLIENTS = '" + strconv.Itoa(idEntity) + "'").Scan(&idSub)
 		if err == nil {
 			c.JSON(200, gin.H{
 				"error": false,

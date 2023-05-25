@@ -12,7 +12,6 @@ import (
 	"cook-master-api/premises"
 	"cook-master-api/token"
 	"cook-master-api/users"
-	"cook_master-api/lessons"
 
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
@@ -35,6 +34,9 @@ func main() {
 	client.GET("/all", clients.GetClients(tokenAPI))     // WORKING
 	client.GET("/:id", clients.GetClientByID(tokenAPI))  // WORKING
 	client.PATCH("/:id", clients.UpdateClient(tokenAPI)) // WORKING
+	client.PATCH("/subscription/:idclient/:idsubscription", clients.UpdateClientSubscription(tokenAPI)) // WORKING
+	client.GET("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI)) // WORKING
+	client.DELETE("/watch/:idclient/:idlesson", clients.UnwatchLesson(tokenAPI)) // WORKING
 	//client.DELETE("/:id", clients.DeleteClient(tokenAPI)) TO DO AFTER OTHERS TABLES
 	contractor := r.Group("/contractor")
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))     // WORKING
