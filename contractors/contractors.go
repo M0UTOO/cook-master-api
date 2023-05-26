@@ -4,44 +4,45 @@ import (
 	"cook-master-api/token"
 	"cook-master-api/utils"
 	"database/sql"
-	"strings"
 	"fmt"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type Contractor struct {
-	Presentation string `json:"presentation"`
+	Presentation  string `json:"presentation"`
 	ContractStart string `json:"contractstart"`
-	ContractEnd string `json:"contractend"`
-	Type string `json:"type"`
+	ContractEnd   string `json:"contractend"`
+	Type          string `json:"type"`
 }
 
 type ContractorUser struct {
-	Id int `json:"id"`
-	Email string `json:"email"`
-	Password string `json:"password"`
-	FirstName string `json:"firstname"`
-	LastName string `json:"lastname"`
+	Id             int    `json:"id"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	FirstName      string `json:"firstname"`
+	LastName       string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
-	IsCreatedAt string `json:"iscreatedat"`
-	LastSeen string `json:"lastseen"`
-	IsBlocked string `json:"isblocked"`
-	IdContractor int `json:"idcontractor"`
-	Presentation string `json:"presentation"`
-	ContractStart string `json:"contractstart"`
-	ContractEnd string `json:"contractend"`
-	Type string `json:"type"`
-	IdUsers int `json:"idusers"`
+	IsCreatedAt    string `json:"iscreatedat"`
+	LastSeen       string `json:"lastseen"`
+	IsBlocked      string `json:"isblocked"`
+	IdContractor   int    `json:"idcontractor"`
+	Presentation   string `json:"presentation"`
+	ContractStart  string `json:"contractstart"`
+	ContractEnd    string `json:"contractend"`
+	Type           string `json:"type"`
+	IdUsers        int    `json:"idusers"`
 }
 
 func GetContractors(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -49,7 +50,7 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -58,7 +59,7 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -68,7 +69,7 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 		rows, err := db.Query("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS ORDER BY USERS.lastname DESC")
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "user not found",
 			})
 			return
@@ -82,7 +83,7 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
-					"error": true,
+					"error":   true,
 					"message": "contractor not found",
 				})
 				return
@@ -98,9 +99,9 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -108,7 +109,7 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -117,7 +118,7 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -125,7 +126,7 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -134,7 +135,7 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -143,11 +144,11 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 
 		var contractor ContractorUser
 
-		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_USERS = " + id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
+		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_USERS = "+id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor not found",
 			})
 			return
@@ -163,9 +164,9 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
 		tokenHeader := c.Request.Header["Token"]
-		if tokenHeader == nil{
+		if tokenHeader == nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "missing token",
 			})
 		}
@@ -173,7 +174,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
 		if err != nil {
 			c.JSON(498, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "wrong token",
 			})
 			return
@@ -182,7 +183,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		id := c.Param("id")
 		if id == "" {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't be empty",
 			})
 			return
@@ -190,7 +191,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 
 		if !utils.IsSafeString(id) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "id can't contain sql injection",
 			})
 			return
@@ -201,38 +202,38 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		err = c.BindJSON(&contractor)
 		if err != nil {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "bad json",
 			})
 			return
 		}
 
 		var setClause []string
-		
-		if !utils.IsSafeString(contractor.Presentation) { 
+
+		if !utils.IsSafeString(contractor.Presentation) {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "bad json",
 			})
 			return
 		}
 
 		if contractor.Presentation != "" || !utils.IsSafeString(contractor.Presentation) {
-			setClause = append(setClause, "Presentation = '" + contractor.Presentation + "'")
+			setClause = append(setClause, "Presentation = '"+contractor.Presentation+"'")
 		}
 		if contractor.ContractStart != "" || !utils.IsSafeString(contractor.ContractStart) {
-			setClause = append(setClause, "ContractStart = '" + contractor.ContractStart + "'")
+			setClause = append(setClause, "ContractStart = '"+contractor.ContractStart+"'")
 		}
 		if contractor.ContractEnd != "" || !utils.IsSafeString(contractor.ContractEnd) {
-			setClause = append(setClause, "ContractEnd = '" + contractor.ContractEnd + "'")
+			setClause = append(setClause, "ContractEnd = '"+contractor.ContractEnd+"'")
 		}
 		if contractor.Type != "" || !utils.IsSafeString(contractor.Type) {
-			setClause = append(setClause, "Type = '" + contractor.Type + "'")
+			setClause = append(setClause, "Type = '"+contractor.Type+"'")
 		}
 
 		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "nothing to update",
 			})
 			return
@@ -241,7 +242,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "cannot connect to bdd",
 			})
 			return
@@ -253,7 +254,7 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + id + "'").Scan(&idcontractor)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor not found",
 			})
 			return
@@ -262,14 +263,14 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		_, err = db.Exec("UPDATE CONTRACTORS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS = " + id)
 		if err != nil {
 			c.JSON(500, gin.H{
-				"error": true,
+				"error":   true,
 				"message": "contractor not found",
 			})
 			return
 		}
 
 		c.JSON(200, gin.H{
-			"error": false,
+			"error":   false,
 			"message": "contractor updated",
 		})
 		return

@@ -6,10 +6,12 @@ import (
 	"cook-master-api/cookingitems"
 	"cook-master-api/cookingspaces"
 	"cook-master-api/events"
+	"cook-master-api/foods"
 	"cook-master-api/ingredients"
 	"cook-master-api/lessons"
 	"cook-master-api/managers"
 	"cook-master-api/premises"
+	"cook-master-api/shopitems"
 	"cook-master-api/token"
 	"cook-master-api/users"
 
@@ -31,12 +33,12 @@ func main() {
 	user.POST("/", users.PostUser(tokenAPI))                     // WORKING
 	user.GET("/login", users.LoginUser(tokenAPI))                // WORKING
 	client := r.Group("/client")
-	client.GET("/all", clients.GetClients(tokenAPI))     // WORKING
-	client.GET("/:id", clients.GetClientByID(tokenAPI))  // WORKING
-	client.PATCH("/:id", clients.UpdateClient(tokenAPI)) // WORKING
+	client.GET("/all", clients.GetClients(tokenAPI))                                                    // WORKING
+	client.GET("/:id", clients.GetClientByID(tokenAPI))                                                 // WORKING
+	client.PATCH("/:id", clients.UpdateClient(tokenAPI))                                                // WORKING
 	client.PATCH("/subscription/:idclient/:idsubscription", clients.UpdateClientSubscription(tokenAPI)) // WORKING
-	client.GET("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI)) // WORKING
-	client.DELETE("/watch/:idclient/:idlesson", clients.UnwatchLesson(tokenAPI)) // WORKING
+	client.GET("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI))                             // MUST BE TESTED
+	client.DELETE("/watch/:idclient/:idlesson", clients.UnwatchLesson(tokenAPI))                        // MUST BE TESTED
 	//client.DELETE("/:id", clients.DeleteClient(tokenAPI)) TO DO AFTER OTHERS TABLES
 	contractor := r.Group("/contractor")
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))     // WORKING
@@ -106,6 +108,18 @@ func main() {
 	lesson.POST("/", lessons.Postlesson(tokenAPI))                        // MUST BE TESTED
 	lesson.POST("/group/:id", lessons.AddLessonToAGroup(tokenAPI))        // MUST BE TESTED
 	lesson.DELETE("/group/:id", lessons.DeleteLessonFromAGroup(tokenAPI)) // MUST BE TESTED
+	food := r.Group("/food")
+	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
+	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING
+	food.POST("/", foods.PostFood(tokenAPI))        // WORKING
+	food.DELETE("/:id", foods.DeleteFood(tokenAPI)) // WORKING
+	food.PATCH("/:id", foods.UpdateFood(tokenAPI))  // WORKING
+	shopitem := r.Group("/shopitem")
+	shopitem.GET("/all", shopitems.GetShopItems(tokenAPI))      // WORKING
+	shopitem.GET("/:id", shopitems.GetShopItemByID(tokenAPI))   // WORKING
+	shopitem.POST("/", shopitems.PostShopItem(tokenAPI))        // WORKING
+	shopitem.DELETE("/:id", shopitems.DeleteShopItem(tokenAPI)) // WORKING
+	shopitem.PATCH("/:id", shopitems.UpdateShopItem(tokenAPI))  // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
