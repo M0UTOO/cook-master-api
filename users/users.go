@@ -24,30 +24,6 @@ type User struct {
 	IsBlocked string `json:"isblocked"`
 }
 
-type Manager struct {
-	IdManager int `json:"idmanager"`
-	IsItemManager bool `json:"isitemmanager"`
-	IsClientManager bool `json:"isclientmanager"`
-	IsContractorManager bool `json:"iscontractormanager"`
-	IsSuperAdmin bool `json:"issuperadmin"`
-}
-
-type Client struct {
-	IdClient int `json:"idclient"`
-	FidelityPoints int `json:"fidelitypoints"`
-	StreetName string `json:"streetname"`
-	Country string `json:"country"`
-	City string `json:"city"`
-	SteetNumber int `json:"streetnumber"`
-	PhoneNumber string `json:"phonenumber"`
-	Subscription int `json:"subscription"`
-}
-
-type Contractor struct {
-	IdContractor int `json:"idcontractor"`
-	Presentation string `json:"presentation"`
-}
-
 func GetUserByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		
@@ -157,7 +133,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			Presentation string `json:"presentation"`
 			ContractStart string `json:"contractstart"`
 			ContractEnd string `json:"contractend"`
-			Type string `json:"type"`
+			ContractorType string `json:"type"`
 			IsItemManager bool `json:"isitemmanager"`
 			IsClientManager bool `json:"isclientmanager"`
 			IsContractorManager bool `json:"iscontractormanager"`
@@ -279,7 +255,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 		} else if typeOfUser[0] == "Contractor" {
-			if req.Presentation == "" || req.ContractStart == "" || req.ContractEnd == "" || req.Type == "" {
+			if req.Presentation == "" || req.ContractStart == "" || req.ContractEnd == "" || req.ContractorType == "" {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "missing field",
@@ -287,7 +263,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
-			if len(req.Type) < 0 || len(req.Type) > 100 {
+			if len(req.ContractorType) < 0 || len(req.ContractorType) > 100 {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "wrong type length",
@@ -295,7 +271,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
-			if !utils.IsSafeString(req.Type) || !utils.IsSafeString(req.Presentation) || !utils.IsSafeString(req.ContractStart) || !utils.IsSafeString(req.ContractEnd) {
+			if !utils.IsSafeString(req.ContractorType) || !utils.IsSafeString(req.Presentation) || !utils.IsSafeString(req.ContractStart) || !utils.IsSafeString(req.ContractEnd) {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "field can't contain sql injection",
@@ -324,7 +300,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			rows, err := db.Exec("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', 0, '', '" + strconv.FormatInt(lastId, 10) + "')")
+			rows, err := db.Exec("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', '', '', '" + strconv.FormatInt(lastId, 10) + "')")
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -376,7 +352,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 
 		} else if typeOfUser[0] == "Contractor" {
-			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + req.Type + "', '" + strconv.FormatInt(lastId, 10) + "')")
+			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + req.ContractorType + "', '" + strconv.FormatInt(lastId, 10) + "')")
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,

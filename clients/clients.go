@@ -26,7 +26,7 @@ type ClientUser struct {
 	StreetName string `json:"streetname"`
 	Country string `json:"country"`
 	City string `json:"city"`
-	SteetNumber int `json:"streetnumber"`
+	SteetNumber string `json:"streetnumber"`
 	PhoneNumber string `json:"phonenumber"`
 	Subscription int `json:"subscription"`
 	IdUsers int `json:"idusers"`
@@ -37,7 +37,7 @@ type Client struct {
 	StreetName string `json:"streetname"`
 	Country string `json:"country"`
 	City string `json:"city"`
-	SteetNumber int `json:"streetnumber"`
+	SteetNumber string `json:"streetnumber"`
 	PhoneNumber string `json:"phonenumber"`
 	Subscription int `json:"subscription"`
 }
@@ -230,19 +230,19 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 		if client.FidelityPoints >= 0 {
 			setClause = append(setClause, "FidelityPoints = "+strconv.Itoa(client.FidelityPoints))
 		}
-		if client.StreetName != "" {
+		if client.StreetName != "" || !utils.IsSafeString(client.StreetName) || len(client.StreetName) > 100 || len(client.StreetName) < 0 {
 			setClause = append(setClause, "StreetName = '"+client.StreetName+"'")
 		}
-		if client.Country != "" {
+		if client.Country != "" || !utils.IsSafeString(client.Country) || len(client.Country) > 50 || len(client.Country) < 0 {
 			setClause = append(setClause, "Country = '"+client.Country+"'")
 		}
-		if client.City != "" {
+		if client.City != "" || !utils.IsSafeString(client.City) || len(client.City) > 100 || len(client.City) < 0 {
 			setClause = append(setClause, "City = '"+client.City+"'")
 		}
-		if client.SteetNumber > 0 {
-			setClause = append(setClause, "StreetNumber = '"+strconv.Itoa(client.SteetNumber)+"'")
+		if client.SteetNumber != "" || !utils.IsSafeString(client.SteetNumber) || len(client.SteetNumber) > 10 || len(client.SteetNumber) < 0 {
+			setClause = append(setClause, "StreetNumber = '"+client.SteetNumber+"'")
 		}
-		if client.PhoneNumber != "" {
+		if client.PhoneNumber != "" || !utils.IsSafeString(client.PhoneNumber) || len(client.PhoneNumber) > 25 || len(client.PhoneNumber) < 0 {
 			setClause = append(setClause, "PhoneNumber = '"+client.PhoneNumber+"'")
 		}
 
