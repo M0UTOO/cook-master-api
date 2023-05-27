@@ -133,7 +133,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			Presentation string `json:"presentation"`
 			ContractStart string `json:"contractstart"`
 			ContractEnd string `json:"contractend"`
-			ContractorType string `json:"contractortype"`
+			IdContractorType int `json:"idcontractortype"`
 			IsItemManager bool `json:"isitemmanager"`
 			IsClientManager bool `json:"isclientmanager"`
 			IsContractorManager bool `json:"iscontractormanager"`
@@ -255,7 +255,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 		} else if typeOfUser[0] == "Contractor" {
-			if req.Presentation == "" || req.ContractStart == "" || req.ContractEnd == "" || req.ContractorType == "" {
+			if req.Presentation == "" || req.ContractStart == "" || req.ContractEnd == "" {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "missing field",
@@ -263,21 +263,26 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
-			if len(req.ContractorType) < 0 || len(req.ContractorType) > 100 {
-				c.JSON(400, gin.H{
-					"error": true,
-					"message": "wrong type length",
-				})
-				return
-			}
-
-			if !utils.IsSafeString(req.ContractorType) || !utils.IsSafeString(req.Presentation) || !utils.IsSafeString(req.ContractStart) || !utils.IsSafeString(req.ContractEnd) {
+			if !utils.IsSafeString(req.Presentation) || !utils.IsSafeString(req.ContractStart) || !utils.IsSafeString(req.ContractEnd) {
 				c.JSON(400, gin.H{
 					"error": true,
 					"message": "field can't contain sql injection",
 				})
 				return
 			}
+
+			var idcontractortype int
+
+			err = db.QueryRow("SELECT Id_CONTRACTOR_TYPES FROM CONTRACTOR_TYPES WHERE Id_CONTRACTOR_TYPES = '" + strconv.Itoa(req.IdContractorType) + "'").Scan(&idcontractortype)
+			if err != nil {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong contractortype id",
+				})
+				return
+			}
+
+
 		}
 
 		result, err := db.Exec("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', DEFAULT, DEFAULT, DEFAULT, DEFAULT)")
@@ -352,7 +357,8 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 
 		} else if typeOfUser[0] == "Contractor" {
-			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + req.ContractorType + "', '" + strconv.FormatInt(lastId, 10) + "')")
+			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + strconv.Itoa(req.IdContractorType) + "', '" + strconv.FormatInt(lastId, 10) + "')")
+			fmt.Println(err)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,

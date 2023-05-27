@@ -12,6 +12,7 @@ import (
 	"cook-master-api/managers"
 	"cook-master-api/premises"
 	"cook-master-api/shopitems"
+	"cook-master-api/comments"
 	"cook-master-api/token"
 	"cook-master-api/users"
 
@@ -44,6 +45,9 @@ func main() {
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))     // WORKING
 	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  // WORKING
 	contractor.PATCH("/:id", contractors.UpdateContractor(tokenAPI)) // WORKING
+	contractor.POST("/type", contractors.AddAContractorType(tokenAPI)) // MUST BE TESTED
+	contractor.DELETE("/type/:id", contractors.DeleteAContractorType(tokenAPI)) // MUST BE TESTED
+	contractor.GET("/type", contractors.GetContractorTypes(tokenAPI)) // MUST BE TESTED
 	//contractor.DELETE("/:id", contractors.DeleteContractor(tokenAPI)) TO DO AFTER OTHERS TABLES
 	manager := r.Group("/manager")
 	manager.GET("/all", managers.GetManagers(tokenAPI))     // WORKING
@@ -120,6 +124,12 @@ func main() {
 	shopitem.POST("/", shopitems.PostShopItem(tokenAPI))        // WORKING
 	shopitem.DELETE("/:id", shopitems.DeleteShopItem(tokenAPI)) // WORKING
 	shopitem.PATCH("/:id", shopitems.UpdateShopItem(tokenAPI))  // WORKING
+	comment := r.Group("/comment")
+	comment.GET("/event/:id", comments.GetCommentsByClientID(tokenAPI))   // MUST BE TESTED
+	comment.GET("/client/:id", comments.GetCommentsByEventID(tokenAPI))   // MUST BE TESTED
+	comment.POST("/", comments.PostComment(tokenAPI))        // MUST BE TESTED
+	comment.DELETE("/:id", comments.DeleteComment(tokenAPI)) // MUST BE TESTED
+	comment.PATCH("/:id", comments.UpdateComment(tokenAPI))  // MUST BE TESTED
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))

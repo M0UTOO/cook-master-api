@@ -17,6 +17,7 @@ type Food struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
+	Picture    string  `json:"picture"`
 }
 
 func GetFoods(tokenAPI string) func(c *gin.Context) {
@@ -63,7 +64,7 @@ func GetFoods(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var food Food
-			err := rows.Scan(&food.IdFood, &food.Name, &food.Description, &food.Price)
+			err := rows.Scan(&food.IdFood, &food.Name, &food.Description, &food.Price, &food.Picture)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -126,7 +127,7 @@ func GetFoodByID(tokenAPI string) func(c *gin.Context) {
 
 		var food Food
 
-		err = db.QueryRow("SELECT * FROM FOODS WHERE Id_FOODS = "+id).Scan(&food.IdFood, &food.Name, &food.Description, &food.Price)
+		err = db.QueryRow("SELECT * FROM FOODS WHERE Id_FOODS = "+id).Scan(&food.IdFood, &food.Name, &food.Description, &food.Price, &food.Picture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -195,6 +196,14 @@ func PostFood(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		if food.Picture == "" || !utils.IsSafeString(food.Picture) || len(food.Picture) < 0 || len(food.Picture) > 255 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "picture can't be empty or contain sql injection",
+			})
+			return
+		}
+
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -216,7 +225,7 @@ func PostFood(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO FOODS (name, description, price) VALUES (?, ?, ?)", food.Name, food.Description, food.Price)
+		_, err = db.Exec("INSERT INTO FOODS (name, description, price, picture) VALUES (?, ?, ?, ?)", food.Name, food.Description, food.Price, food.Picture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -388,6 +397,24 @@ func UpdateFood(tokenAPI string) func(c *gin.Context) {
 
 		if req.Price > 0 {
 			setClause = append(setClause, "price = '"+strconv.FormatFloat(req.Price, 'f', 2, 64)+"'")
+		}
+
+		if req.Picture != "" {
+			if !utils.IsSafeString(req.Picture) {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "unsafe string",
+				})
+				return
+			}
+			if len(req.Picture) < 0 || len(req.Picture) > 255 {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "picture must be between 0 and 255 characters",
+				})
+				return
+			}
+			setClause = append(setClause, "picture = '"+req.Picture+"'")
 		}
 
 		if len(setClause) == 0 {

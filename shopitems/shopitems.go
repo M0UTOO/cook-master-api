@@ -19,6 +19,7 @@ type ShopItem struct {
 	Price       float64 `json:"price"`
 	Stock       int     `json:"stock"`
 	Reward      string  `json:"reward"`
+	Picture	 string  `json:"picture"`
 }
 
 func GetShopItems(tokenAPI string) func(c *gin.Context) {
@@ -65,7 +66,7 @@ func GetShopItems(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var shopitem ShopItem
-			err := rows.Scan(&shopitem.IdShopItem, &shopitem.Name, &shopitem.Description, &shopitem.Price, &shopitem.Stock, &shopitem.Reward)
+			err := rows.Scan(&shopitem.IdShopItem, &shopitem.Name, &shopitem.Description, &shopitem.Price, &shopitem.Stock, &shopitem.Reward, &shopitem.Picture)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -128,7 +129,7 @@ func GetShopItemByID(tokenAPI string) func(c *gin.Context) {
 
 		var shopitem ShopItem
 
-		err = db.QueryRow("SELECT * FROM SHOP_ITEMS WHERE Id_SHOP_ITEMS = "+id).Scan(&shopitem.IdShopItem, &shopitem.Name, &shopitem.Description, &shopitem.Price, &shopitem.Stock, &shopitem.Reward)
+		err = db.QueryRow("SELECT * FROM SHOP_ITEMS WHERE Id_SHOP_ITEMS = "+id).Scan(&shopitem.IdShopItem, &shopitem.Name, &shopitem.Description, &shopitem.Price, &shopitem.Stock, &shopitem.Reward, &shopitem.Picture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -213,6 +214,14 @@ func PostShopItem(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		if shopitem.Picture == "" || !utils.IsSafeString(shopitem.Picture) || len(shopitem.Picture) < 0 || len(shopitem.Picture) > 255 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "picture can't be empty, contain sql injection or wrong lenght",
+			})
+			return
+		}
+
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -234,7 +243,7 @@ func PostShopItem(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO SHOP_ITEMS (name, description, price, stock, reward) VALUES (?, ?, ?, ?, ?)", shopitem.Name, shopitem.Description, shopitem.Price, shopitem.Stock, shopitem.Reward)
+		_, err = db.Exec("INSERT INTO SHOP_ITEMS (name, description, price, stock, reward, picture) VALUES (?, ?, ?, ?, ?, ?)", shopitem.Name, shopitem.Description, shopitem.Price, shopitem.Stock, shopitem.Reward, shopitem.Picture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -428,6 +437,24 @@ func UpdateShopItem(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 			setClause = append(setClause, "reward = '"+req.Reward+"'")
+		}
+
+		if req.Picture != "" {
+			if !utils.IsSafeString(req.Picture) {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "unsafe string",
+				})
+				return
+			}
+			if len(req.Picture) < 0 || len(req.Picture) > 255 {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "picture must be between 0 and 255 characters",
+				})
+				return
+			}
+			setClause = append(setClause, "picture = '"+req.Picture+"'")
 		}
 
 		if len(setClause) == 0 {
