@@ -15,7 +15,7 @@ type Contractor struct {
 	Presentation  string `json:"presentation"`
 	ContractStart string `json:"contractstart"`
 	ContractEnd   string `json:"contractend"`
-	Type          string `json:"type"`
+	ContractorType          string `json:"contractortype"`
 }
 
 type ContractorUser struct {
@@ -32,7 +32,7 @@ type ContractorUser struct {
 	Presentation   string `json:"presentation"`
 	ContractStart  string `json:"contractstart"`
 	ContractEnd    string `json:"contractend"`
-	Type           string `json:"type"`
+	ContractorType           string `json:"contractortype"`
 	IdUsers        int    `json:"idusers"`
 }
 
@@ -79,7 +79,7 @@ func GetContractors(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var contractor ContractorUser
-			err = rows.Scan(&contractor.IdContractor, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdUsers, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
+			err = rows.Scan(&contractor.IdContractor, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.ContractorType, &contractor.IdUsers, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -144,7 +144,7 @@ func GetContractorByID(tokenAPI string) func(c *gin.Context) {
 
 		var contractor ContractorUser
 
-		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_USERS = "+id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.Type, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
+		err = db.QueryRow("SELECT * FROM CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE CONTRACTORS.Id_USERS = "+id).Scan(&contractor.Id, &contractor.Presentation, &contractor.ContractStart, &contractor.ContractEnd, &contractor.ContractorType, &contractor.IdContractor, &contractor.Id, &contractor.Email, &contractor.Password, &contractor.FirstName, &contractor.LastName, &contractor.ProfilePicture, &contractor.IsCreatedAt, &contractor.LastSeen, &contractor.IsBlocked)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -227,8 +227,8 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 		if contractor.ContractEnd != "" || !utils.IsSafeString(contractor.ContractEnd) {
 			setClause = append(setClause, "ContractEnd = '"+contractor.ContractEnd+"'")
 		}
-		if contractor.Type != "" || !utils.IsSafeString(contractor.Type) {
-			setClause = append(setClause, "Type = '"+contractor.Type+"'")
+		if contractor.ContractorType != "" || !utils.IsSafeString(contractor.ContractorType) {
+			setClause = append(setClause, "ContractorType = '"+contractor.ContractorType+"'")
 		}
 
 		if len(setClause) == 0 {

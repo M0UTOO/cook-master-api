@@ -133,7 +133,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			Presentation string `json:"presentation"`
 			ContractStart string `json:"contractstart"`
 			ContractEnd string `json:"contractend"`
-			ContractorType string `json:"type"`
+			ContractorType string `json:"contractortype"`
 			IsItemManager bool `json:"isitemmanager"`
 			IsClientManager bool `json:"isclientmanager"`
 			IsContractorManager bool `json:"iscontractormanager"`
