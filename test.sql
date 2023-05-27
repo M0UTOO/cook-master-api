@@ -103,8 +103,8 @@ CREATE TABLE SHOP_ITEMS(
    description TEXT,
    price DECIMAL(19,4),
    stock BIGINT,
-   picture VARCHAR(255)  NOT NULL DEFAULT 'default.png',
    reward VARCHAR(50) ,
+   picture VARCHAR(255)  NOT NULL DEFAULT 'default.png',
    PRIMARY KEY(Id_SHOP_ITEMS)
 );
 
@@ -137,7 +137,7 @@ CREATE TABLE BILLS(
    Id_BILLS INT AUTO_INCREMENT,
    name VARCHAR(255)  NOT NULL,
    type VARCHAR(50)  NOT NULL,
-   createdAt DATETIME NOT NULL,
+   createdAt DATETIME NOT NULL DEFAULT NOW(),
    Id_USERS INT NOT NULL,
    PRIMARY KEY(Id_BILLS),
    UNIQUE(name),
@@ -192,7 +192,7 @@ CREATE TABLE COMMENTS(
    Id_COMMENTS INT AUTO_INCREMENT,
    grade DECIMAL(2,1)   NOT NULL,
    content TEXT,
-   photo_link VARCHAR(50) ,
+   picture VARCHAR(255)  DEFAULT 'default.png',
    Id_CLIENTS INT NOT NULL,
    Id_EVENTS INT NOT NULL,
    PRIMARY KEY(Id_COMMENTS),

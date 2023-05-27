@@ -13,6 +13,7 @@ import (
 	"cook-master-api/premises"
 	"cook-master-api/shopitems"
 	"cook-master-api/comments"
+	"cook-master-api/bills"
 	"cook-master-api/token"
 	"cook-master-api/users"
 
@@ -130,6 +131,13 @@ func main() {
 	comment.POST("/", comments.PostComment(tokenAPI))        // MUST BE TESTED
 	comment.DELETE("/:id", comments.DeleteComment(tokenAPI)) // MUST BE TESTED
 	comment.PATCH("/:id", comments.UpdateComment(tokenAPI))  // MUST BE TESTED
+	bill := r.Group("/bill")
+	bill.GET("/all", bills.GetBills(tokenAPI))      // MUST BE TESTED
+	bill.GET("/:id", bills.GetBillByID(tokenAPI))   // MUST BE TESTED
+	bill.GET("/user/:id", bills.GetBillsByUserID(tokenAPI))   // MUST BE TESTED
+	bill.POST("/", bills.PostBill(tokenAPI))        // MUST BE TESTED
+	bill.DELETE("/:id", bills.DeleteBill(tokenAPI)) // MUST BE TESTED
+	bill.PATCH("/:id", bills.UpdateBill(tokenAPI))  // MUST BE TESTED
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
