@@ -566,8 +566,9 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 
 		var user User
 
-		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture)
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "user not found",
