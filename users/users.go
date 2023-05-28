@@ -855,3 +855,219 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func DeleteUser(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+		
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		typeOfUser := c.Request.Header["Type"]
+		if typeOfUser == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing type",
+			})
+		}
+
+		if typeOfUser[0] != "Client" && typeOfUser[0] != "Contractor" && typeOfUser[0] != "Manager" {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong type",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		if typeOfUser[0] == "Client" {
+			var idClient int
+
+			err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + id + "'").Scan(&idClient)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "client not found",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM IS_SUBSCRIBED WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client subscription",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM WATCHES WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client watch",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM PARTICIPATES WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client participate",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM CLIENTS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client",
+				})
+				return
+			}
+		} else if typeOfUser[0] == "Manager" {
+			var idManager int
+
+			err = db.QueryRow("SELECT Id_MANAGERS FROM MANAGERS WHERE Id_USERS = '" + id + "'").Scan(&idManager)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "manager not found",
+				})
+				return
+			}
+
+			_, err = db.Exec("UPDATE ORGANIZES SET Id_MANAGERS = 1 WHERE Id_MANAGERS =" + strconv.Itoa(idManager))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot update organizes",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM MANAGERS WHERE Id_MANAGERS=" + strconv.Itoa(idManager))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client",
+				})
+				return
+			}
+
+		} else if typeOfUser[0] == "Contractor" {
+
+			var idContractor int
+
+			err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + id + "'").Scan(&idContractor)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "contractor not found",
+				})
+				return
+			}
+
+			_, err = db.Exec("UPDATE ANIMATES SET Id_CONTRACTORS = 1 WHERE Id_CONTRACTORS =" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot update animates",
+				})
+				return
+			}
+
+			_, err = db.Exec("UPDATE TEACHES SET Id_CONTRACTORS = 1 WHERE Id_CONTRACTORS =" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot update teaches",
+				})
+				return
+			}
+
+			_, err = db.Exec("UPDATE ORDERS SET Id_CONTRACTORS = 1 WHERE Id_CONTRACTORS =" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot update orders",
+				})
+				return
+			}
+
+			_, err = db.Exec("UPDATE ORDERS SET Id_CONTRACTORS = 1 WHERE Id_CONTRACTORS_1 =" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot update orders",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM CONTRACTORS WHERE Id_CONTRACTORS=" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete contractor",
+				})
+				return
+			}
+		}
+
+		_, err = db.Exec("DELETE FROM USERS WHERE Id_USERS=" + id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot delete user",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error": false,
+			"message": "user deleted",
+		})
+		return
+	}
+}

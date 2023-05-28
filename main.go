@@ -35,6 +35,7 @@ func main() {
 	user.GET("/all", users.GetUsers(tokenAPI))                   // WORKING BUT MAYBE NOT USEFUL
 	user.POST("/", users.PostUser(tokenAPI))                     // WORKING
 	user.GET("/login", users.LoginUser(tokenAPI))                // WORKING
+	user.DELETE("/:id", users.DeleteUser(tokenAPI))              // MUST BE TESTED
 	client := r.Group("/client")
 	client.GET("/all", clients.GetClients(tokenAPI))                                                    // WORKING
 	client.GET("/:id", clients.GetClientByID(tokenAPI))                                                 // WORKING
@@ -42,7 +43,6 @@ func main() {
 	client.PATCH("/subscription/:idclient/:idsubscription", clients.UpdateClientSubscription(tokenAPI)) // WORKING
 	client.GET("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI))                             // MUST BE TESTED
 	client.DELETE("/watch/:idclient/:idlesson", clients.UnwatchLesson(tokenAPI))                        // MUST BE TESTED
-	//client.DELETE("/:id", clients.DeleteClient(tokenAPI)) TO DO AFTER OTHERS TABLES
 	contractor := r.Group("/contractor")
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))     // WORKING
 	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  // WORKING
@@ -50,12 +50,10 @@ func main() {
 	contractor.POST("/type", contractors.AddAContractorType(tokenAPI)) // MUST BE TESTED
 	contractor.DELETE("/type/:id", contractors.DeleteAContractorType(tokenAPI)) // MUST BE TESTED
 	contractor.GET("/type", contractors.GetContractorTypes(tokenAPI)) // MUST BE TESTED
-	//contractor.DELETE("/:id", contractors.DeleteContractor(tokenAPI)) TO DO AFTER OTHERS TABLES
 	manager := r.Group("/manager")
 	manager.GET("/all", managers.GetManagers(tokenAPI))     // WORKING
 	manager.GET("/:id", managers.GetManagerByID(tokenAPI))  // WORKING
 	manager.PATCH("/:id", managers.UpdateManager(tokenAPI)) // WORKING
-	// manager.DELETE("/:id", managers.DeleteManager(tokenAPI)) // TO DO AFTER OTHERS TABLES
 	subscription := r.Group("/subscription")
 	subscription.GET("/all", subscriptions.GetSubscriptions(tokenAPI))      // WORKING
 	subscription.GET("/:id", subscriptions.GetSubscriptionByID(tokenAPI))   // WORKING
