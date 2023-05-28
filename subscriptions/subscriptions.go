@@ -5,6 +5,7 @@ import (
 	"cook-master-api/utils"
 	"database/sql"
 	"strconv"
+	"fmt"
 	"strings"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -172,7 +173,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if !utils.IsSafeString(subscription.Name) || !utils.IsSafeString(subscription.Picture) || !utils.IsSafeString(subscription.Description) {
+		if !utils.IsSafeString(subscription.Name) || !utils.IsSafeString(subscription.Description) {
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "unsafe string",
@@ -180,7 +181,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if subscription.Name == "" || subscription.Price < 0 || subscription.MaxLessonAccess <= 0 || subscription.Picture == "" || subscription.Description == "" {
+		if subscription.Name == "" || subscription.Price < 0 || subscription.MaxLessonAccess <= 0 || subscription.Description == "" {
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "missing field",
@@ -209,8 +210,9 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		result, err := db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description) VALUES (?, ?, ?, DEFAULT, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture, subscription.Description)
+		result, err := db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description) VALUES (?, ?, ?, DEFAULT, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Description)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "can't insert into database",

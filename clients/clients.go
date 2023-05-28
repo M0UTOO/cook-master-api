@@ -29,6 +29,7 @@ type ClientUser struct {
 	SteetNumber string `json:"streetnumber"`
 	PhoneNumber string `json:"phonenumber"`
 	Subscription int `json:"subscription"`
+	KeepSubscription bool `json:"keepsubscription"`
 	IdUsers int `json:"idusers"`
 }
 
@@ -40,6 +41,7 @@ type Client struct {
 	SteetNumber string `json:"streetnumber"`
 	PhoneNumber string `json:"phonenumber"`
 	Subscription int `json:"subscription"`
+	KeepSubscription bool `json:"keepsubscription"`
 }
 
 
@@ -86,7 +88,7 @@ func GetClients(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var client ClientUser
-			err = rows.Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
+			err = rows.Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.KeepSubscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -151,7 +153,7 @@ func GetClientByID(tokenAPI string) func(c *gin.Context) {
 
 		var client ClientUser
 
-		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
+		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.KeepSubscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -169,6 +171,17 @@ func GetClientByID(tokenAPI string) func(c *gin.Context) {
 
 func UpdateClient(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
+
+		type ClientReq struct {
+			FidelityPoints int `json:"fidelitypoints"`
+			StreetName string `json:"streetname"`
+			Country string `json:"country"`
+			City string `json:"city"`
+			SteetNumber string `json:"streetnumber"`
+			PhoneNumber string `json:"phonenumber"`
+			Subscription int `json:"subscription"`
+			KeepSubscription int `json:"keepsubscription"`
+		}
 
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil{
@@ -204,9 +217,10 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var client Client
+		var client ClientReq
 
 		client.FidelityPoints = -1
+		client.KeepSubscription = -1
 
 		err = c.BindJSON(&client)
 		if err != nil {
@@ -244,6 +258,11 @@ func UpdateClient(tokenAPI string) func(c *gin.Context) {
 		}
 		if client.PhoneNumber != "" || !utils.IsSafeString(client.PhoneNumber) || len(client.PhoneNumber) > 25 || len(client.PhoneNumber) < 0 {
 			setClause = append(setClause, "PhoneNumber = '"+client.PhoneNumber+"'")
+		}
+		if client.KeepSubscription == 0 {
+			setClause = append(setClause, "KeepSubscription = false")
+		} else if client.KeepSubscription == 1 {
+			setClause = append(setClause, "KeepSubscription = true")
 		}
 
 		if len(setClause) == 0 {
@@ -306,19 +325,19 @@ func UpdateClientSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		idclient := c.Param("idclient")
-		if idclient == "" {
+		iduser := c.Param("iduser")
+		if iduser == "" {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "idclient can't be empty",
+				"message": "iduser can't be empty",
 			})
 			return
 		}
 
-		if !utils.IsSafeString(idclient) {
+		if !utils.IsSafeString(iduser) {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "idclient can't contain sql injection",
+				"message": "iduser can't contain sql injection",
 			})
 			return
 		}
@@ -340,24 +359,6 @@ func UpdateClientSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var subscription Subscription
-		err = c.BindJSON(&subscription)
-		if err != nil {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "bad json",
-			})
-			return
-		}
-
-		if subscription.EndTime == "" || !utils.IsSafeString(subscription.EndTime) {
-			c.JSON(400, gin.H{
-				"error": true,
-				"message": "bad json",
-			})
-			return
-		}
-
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -368,7 +369,9 @@ func UpdateClientSubscription(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		err = db.QueryRow("SELECT Id_USERS FROM CLIENTS WHERE Id_USERS = " + idclient).Scan(&idclient)
+		var idclient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = " + iduser).Scan(&idclient)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -377,7 +380,9 @@ func UpdateClientSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		err = db.QueryRow("SELECT Id_SUBSCRIPTIONS FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + idsubscription).Scan(&idsubscription)
+		var idSubscription string
+
+		err = db.QueryRow("SELECT Id_SUBSCRIPTIONS FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + idsubscription).Scan(&idSubscription)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -386,16 +391,17 @@ func UpdateClientSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO IS_SUBSCRIBED (Id_CLIENTS, Id_SUBSCRIPTIONS, endtime) VALUES (?, ?, ?)", idclient, idsubscription, subscription.EndTime)
+		_, err = db.Exec("INSERT INTO IS_SUBSCRIBED (Id_CLIENTS, Id_SUBSCRIPTIONS, endtime) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 MONTH))", idclient, idsubscription)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
-				"message": "canno insert is_subscribed",
+				"message": "cannot insert is_subscribed",
 			})
 			return
 		}
 
-		_, err = db.Exec("UPDATE CLIENTS SET Subscription = " + idsubscription + " WHERE Id_USERS = " + idclient)
+		_, err = db.Exec("UPDATE CLIENTS SET Subscription = " + idsubscription + " WHERE Id_USERS = " + iduser)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

@@ -305,7 +305,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if typeOfUser[0] == "Client" {
-			rows, err := db.Exec("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', '', '', '" + strconv.FormatInt(lastId, 10) + "')")
+			rows, err := db.Exec("INSERT INTO CLIENTS VALUES(NULL, DEFAULT, '', '" + req.Country + "', '', '', '', '" + strconv.Itoa(req.Subscription) + "', DEFAULT, '" + strconv.FormatInt(lastId, 10) + "')")
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{

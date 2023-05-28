@@ -35,12 +35,12 @@ func main() {
 	user.GET("/all", users.GetUsers(tokenAPI))                   // WORKING
 	user.POST("/", users.PostUser(tokenAPI))                     // WORKING
 	user.GET("/login", users.LoginUser(tokenAPI)) // WORKING
-	user.DELETE("/:id", users.DeleteUser(tokenAPI))              
+	user.DELETE("/:id", users.DeleteUser(tokenAPI))              // WORKING
 	client := r.Group("/client")
 	client.GET("/all", clients.GetClients(tokenAPI))       // WORKING                                             
-	client.GET("/:id", clients.GetClientByID(tokenAPI))                                                 
-	client.PATCH("/:id", clients.UpdateClient(tokenAPI))                                                
-	client.PATCH("/subscription/:idclient/:idsubscription", clients.UpdateClientSubscription(tokenAPI)) 
+	client.GET("/:id", clients.GetClientByID(tokenAPI))             // WORKING                                    
+	client.PATCH("/:id", clients.UpdateClient(tokenAPI))            // WORKING                          
+	client.PATCH("/subscription/:iduser/:idsubscription", clients.UpdateClientSubscription(tokenAPI)) 
 	client.GET("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI))                             
 	client.DELETE("/watch/:idclient/:idlesson", clients.UnwatchLesson(tokenAPI))                        
 	contractor := r.Group("/contractor")
