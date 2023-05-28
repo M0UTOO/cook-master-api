@@ -73,7 +73,7 @@ CREATE TABLE SUBSCRIPTIONS(
    Id_SUBSCRIPTIONS INT AUTO_INCREMENT,
    name VARCHAR(50) ,
    price DECIMAL(19,4),
-   max_lesson_access TINYINT,
+   max_lesson_access INT,
    picture VARCHAR(50) ,
    PRIMARY KEY(Id_SUBSCRIPTIONS),
    UNIQUE(name)
