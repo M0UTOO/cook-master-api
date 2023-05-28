@@ -179,7 +179,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if subscription.Name == "" || subscription.Price <= 0 || subscription.MaxLessonAccess <= 0 || subscription.Picture == "" {
+		if subscription.Name == "" || subscription.Price < 0 || subscription.MaxLessonAccess <= 0 || subscription.Picture == "" {
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "missing field",
