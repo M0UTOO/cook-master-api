@@ -75,6 +75,7 @@ CREATE TABLE SUBSCRIPTIONS(
    price DECIMAL(19,4),
    max_lesson_access INT,
    picture VARCHAR(50) ,
+   description TEXT,
    PRIMARY KEY(Id_SUBSCRIPTIONS),
    UNIQUE(name)
 );

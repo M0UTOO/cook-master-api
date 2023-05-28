@@ -16,6 +16,7 @@ type Subscription struct {
 	Price float64 `json:"price"`
 	MaxLessonAccess int `json:"maxlessonaccess"`
 	Picture string `json:"picture"`
+	Description string `json:"description"`
 }
 
 func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
@@ -62,7 +63,7 @@ func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var subscription Subscription
-			err := rows.Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture)
+			err := rows.Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -125,7 +126,7 @@ func GetSubscriptionByID(tokenAPI string) func(c *gin.Context) {
 
 		var subscription Subscription
 
-		err = db.QueryRow("SELECT * FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + id).Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture)
+		err = db.QueryRow("SELECT * FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + id).Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -171,7 +172,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if !utils.IsSafeString(subscription.Name) || !utils.IsSafeString(subscription.Picture) {
+		if !utils.IsSafeString(subscription.Name) || !utils.IsSafeString(subscription.Picture) || !utils.IsSafeString(subscription.Description) {
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "unsafe string",
@@ -179,7 +180,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if subscription.Name == "" || subscription.Price < 0 || subscription.MaxLessonAccess <= 0 || subscription.Picture == "" {
+		if subscription.Name == "" || subscription.Price < 0 || subscription.MaxLessonAccess <= 0 || subscription.Picture == "" || subscription.Description == "" {
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "missing field",
@@ -208,7 +209,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture) VALUES (?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture)
+		_, err = db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description) VALUES (?, ?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture, subscription.Description)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -379,6 +380,17 @@ func UpdateSubscription(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 			setClause = append(setClause, "picture = '"+req.Picture+"'")
+		}
+
+		if req.Description != "" {
+			if !utils.IsSafeString(req.Description) {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "unsafe string",
+				})
+				return
+			}
+			setClause = append(setClause, "description = '"+req.Description+"'")
 		}
 
 		if len(setClause) == 0 {
