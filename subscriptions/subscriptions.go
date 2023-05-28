@@ -209,7 +209,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description) VALUES (?, ?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture, subscription.Description)
+		result, err := db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description) VALUES (?, ?, ?, DEFAULT, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Picture, subscription.Description)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -218,9 +218,19 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		lastId, err := result.LastInsertId()
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "can't get last id",
+			})
+			return
+		}
+
 		c.JSON(200, gin.H{
 			"error": false,
 			"message": "subscription added",
+			"id": lastId,
 		})
 	}
 }

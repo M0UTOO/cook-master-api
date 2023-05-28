@@ -312,17 +312,26 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 					"error": true,
 					"message": "error on query request to bdd",
 				})
+
+				_, err = db.Exec("DELETE FROM USERS WHERE Id_USERS=" + strconv.FormatInt(lastId, 10))
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete user",
+					})
+					return
+				}
 				return
 			}
 
 			lastIdClient, err := rows.LastInsertId()
-			if err != nil {
-				c.JSON(500, gin.H{
-					"error": true,
-					"message": "cannot get client id",
-				})
-				return
-			}
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot get client id",
+					})
+					return
+				}
 
 			_, err = db.Query("INSERT INTO IS_SUBSCRIBED VALUES(?, ?, DATE_ADD(NOW(), INTERVAL 1 MONTH))", strconv.FormatInt(lastIdClient, 10), strconv.Itoa(req.Subscription))
 			if err != nil {
@@ -346,6 +355,15 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 					"error": true,
 					"message": "error on query request to bdd",
 				})
+
+				_, err = db.Exec("DELETE FROM USERS WHERE Id_USERS=" + strconv.FormatInt(lastId, 10))
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete user",
+					})
+					return
+				}
 				return
 			}
 			defer rows.Close()
@@ -364,6 +382,15 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 					"error": true,
 					"message": "error on query request to bdd",
 				})
+				
+				_, err = db.Exec("DELETE FROM USERS WHERE Id_USERS=" + strconv.FormatInt(lastId, 10))
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete user",
+					})
+					return
+				}
 				return
 			}
 			defer rows.Close()

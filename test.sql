@@ -74,7 +74,7 @@ CREATE TABLE SUBSCRIPTIONS(
    name VARCHAR(50) ,
    price DECIMAL(19,4),
    max_lesson_access INT,
-   picture VARCHAR(50) ,
+   picture VARCHAR(50)  DEFAULT 'default.png',
    description TEXT,
    PRIMARY KEY(Id_SUBSCRIPTIONS),
    UNIQUE(name)
