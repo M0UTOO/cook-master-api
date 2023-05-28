@@ -13,6 +13,7 @@ import (
 	"cook-master-api/premises"
 	"cook-master-api/shopitems"
 	"cook-master-api/comments"
+	"cook-master-api/orders"
 	"cook-master-api/bills"
 	"cook-master-api/token"
 	"cook-master-api/users"
@@ -138,6 +139,19 @@ func main() {
 	bill.POST("/", bills.PostBill(tokenAPI))        // MUST BE TESTED
 	bill.DELETE("/:id", bills.DeleteBill(tokenAPI)) // MUST BE TESTED
 	bill.PATCH("/:id", bills.UpdateBill(tokenAPI))  // MUST BE TESTED
+	order := r.Group("/order")
+	order.GET("/all", orders.GetOrders(tokenAPI))      // MUST BE TESTED
+	order.GET("/:id", orders.GetOrder(tokenAPI))   // MUST BE TESTED
+	order.GET("/chef/:id", orders.GetOrderByContractor1ID(tokenAPI))   // MUST BE TESTED
+	order.GET("/deliveryman/:id", orders.GetOrderByContractor2ID(tokenAPI))   // MUST BE TESTED
+	order.GET("/client/:id", orders.GetOrderByClientID(tokenAPI))   // MUST BE TESTED
+	order.POST("/", orders.PostOrder(tokenAPI))        // MUST BE TESTED
+	order.DELETE("/:id", orders.DeleteOrder(tokenAPI)) // MUST BE TESTED
+	order.PATCH("/:id", orders.UpdateOrder(tokenAPI))  // MUST BE TESTED
+	order.PATCH("/item/:iditem/:idorder", orders.AddItemToAnOrder(tokenAPI))  // MUST BE TESTED
+	order.DELETE("/item/:iditem/:idorder", orders.DeleteItemFromAnOrder(tokenAPI))  // MUST BE TESTED
+	order.PATCH("/food/:idfood/:idorder", orders.AddFoodToAnOrder(tokenAPI))  // MUST BE TESTED
+	order.DELETE("/food/:idfood/:idorder", orders.DeleteFoodFromAnOrder(tokenAPI))  // MUST BE TESTED
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
