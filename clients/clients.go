@@ -516,7 +516,7 @@ func WatchLesson(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO WATCHES (Id_CLIENTS, Id_LESSONS) VALUES (?, ?)", idLesson, idclient)
+		_, err = db.Exec("INSERT INTO WATCHES (Id_CLIENTS, Id_LESSONS) VALUES (?, ?)", idlesson, idclient)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -533,7 +533,7 @@ func WatchLesson(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
-func UnwatchLesson(tokenAPI string) func(c *gin.Context) {
+func UnWatchLesson(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		tokenHeader := c.Request.Header["Token"]
 

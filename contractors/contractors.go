@@ -265,11 +265,12 @@ func UpdateContractor(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("UPDATE CONTRACTORS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS = " + id)
+		_, err = db.Exec("UPDATE CONTRACTORS SET " + strings.Join(setClause, ", ") + " WHERE Id_USERS = '" + id + "'")
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
-				"message": "contractor not found",
+				"message": "cannot update contractor",
 			})
 			return
 		}

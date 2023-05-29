@@ -285,6 +285,15 @@ func DeleteSubscription(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
+		_, err = db.Exec("DELETE FROM IS_SUBSCRIBED WHERE Id_SUBSCRIPTIONS = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "can't delete from database",
+			})
+			return
+		}
+
 		_, err = db.Exec("DELETE FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{

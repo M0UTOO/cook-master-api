@@ -1369,7 +1369,7 @@ func AddEventToAnCookingSpace(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		idcooking := c.Param("idcooking")
+		idcooking := c.Param("idcookingspace")
 		if idcooking == "" {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -1483,7 +1483,7 @@ func DeleteEventToAnCookingSpace(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		idcooking := c.Param("idcooking")
+		idcooking := c.Param("idcookingspace")
 		if idcooking == "" {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -1543,7 +1543,7 @@ func DeleteEventToAnCookingSpace(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("DELETE FROM IS_HOSTED WHERE Id_EVENT = '" + idEvent + "' AND Id_COOKING_SPACES = '" + idcooking + "'")
+		_, err = db.Exec("DELETE FROM IS_HOSTED WHERE Id_EVENTS = '" + idEvent + "' AND Id_COOKING_SPACES = '" + idcooking + "'")
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

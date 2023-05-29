@@ -279,7 +279,7 @@ func PostCookingSpace(tokenAPI string) func(c *gin.Context) {
 				"message": "price per hour can't be negative or zero",
 			})
 			return
-		}
+		}	
 
 		var idPremise int
 
@@ -387,6 +387,15 @@ func AddCookingSpaceToAPremise(tokenAPI string) func(c *gin.Context) {
 		}
 
 		var idCookingSpace int
+
+		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM COOKING_SPACES WHERE Id_COOKING_SPACES= '" + id + "'").Scan(&idCookingSpace)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot find cookingspace",
+			})
+			return
+		}
 
 		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM COOKING_SPACES WHERE Id_PREMISES = '" + strconv.Itoa(idPremise) + "' AND Id_COOKING_SPACES = '" + id + "'").Scan(&idCookingSpace)
 		if err != nil {
@@ -650,7 +659,7 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		idcooking := c.Param("idcooking")
+		idcooking := c.Param("idcookingspace")
 		if idcooking == "" {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -705,7 +714,7 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 
 		var idclient string
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM EVENTS WHERE Id_CLIENTS = '" + idClient + "'").Scan(&idclient)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + idClient + "'").Scan(&idclient)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -727,7 +736,7 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 
 		var idbooks string
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM IS_HOSTED WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_CLIENTS = '" + idclient + "'").Scan(&idbooks)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM BOOKS WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_CLIENTS = '" + idclient + "'").Scan(&idbooks)
 		if err == nil {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -736,7 +745,7 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO IS_HOSTED (Id_COOKING_SPACES, Starttime, Endtime, Id_CLIENTS) VALUES (?, ?, ?, ?)", idcookingspace, books.StartTime, books.EndTime, idclient)
+		_, err = db.Exec("INSERT INTO BOOKS (Id_COOKING_SPACES, Starttime, Endtime, Id_CLIENTS) VALUES (?, ?, ?, ?)", idcookingspace, books.StartTime, books.EndTime, idclient)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -790,7 +799,7 @@ func DeleteABooks(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		idcooking := c.Param("idcooking")
+		idcooking := c.Param("idcookingspace")
 		if idcooking == "" {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -819,7 +828,7 @@ func DeleteABooks(tokenAPI string) func(c *gin.Context) {
 
 		var idclient string
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM EVENTS WHERE Id_CLIENTS = '" + idClient + "'").Scan(&idclient)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + idClient + "'").Scan(&idclient)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -841,7 +850,7 @@ func DeleteABooks(tokenAPI string) func(c *gin.Context) {
 
 		var idbooks string
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM IS_HOSTED WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_CLIENTS = '" + idclient + "'").Scan(&idbooks)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM BOOKS WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_CLIENTS = '" + idclient + "'").Scan(&idbooks)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -850,7 +859,7 @@ func DeleteABooks(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("DELETE FROM BOOKS WHERE Id_CLIENTS = '" + idclient + "' AND Id_COOKING = '" + idcookingspace + "'")
+		_, err = db.Exec("DELETE FROM BOOKS WHERE Id_CLIENTS = '" + idclient + "' AND Id_COOKING_SPACES = '" + idcookingspace + "'")
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
