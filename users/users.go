@@ -1098,3 +1098,84 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetPasswordByEmail(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type Email struct {
+			Email string `json:"email"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+		
+		var email Email
+
+		err = c.BindJSON(&email)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "bad json",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(email.Email) {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "email can't contain sql injection",
+			})
+			return
+		}
+
+		match, _ := regexp.MatchString("^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\\.[a-z]{2,6}$", email.Email)
+		if !match {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong email format",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var password string
+
+		err = db.QueryRow("SELECT Password FROM USERS WHERE Email = '" + email.Email + "'").Scan(&password)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "email not found",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error": false,
+			"password": password,
+		})
+		return
+	}
+}
