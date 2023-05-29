@@ -118,14 +118,15 @@ func GetOrder(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		row := db.QueryRow("SELECT * FROM ORDERS WHERE idorder = ?", id)
+		row := db.QueryRow("SELECT * FROM ORDERS WHERE Id_ORDERS = ?", id)
 
 		var order Order
 		err = row.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
-				"message": "can't scan row",
+				"message": "order not found",
 			})
 			return
 		}
@@ -164,7 +165,7 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if order.Status == "" || order.Price < 0 || order.DeliveryAddress == "" || order.IdContractor1 == 0 || order.IdContractor2 == 0 || order.IdClient == 0 {
+		if order.Status == "" || order.Price < 0 || order.IdContractor1 == 0 || order.IdContractor2 == 0 || order.IdClient == 0 {
 			c.JSON(400, gin.H{
 				"error":   true,
 				"message": "missing parameters",
@@ -172,15 +173,13 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if !utils.IsSafeString(order.Status) || !utils.IsSafeString(order.DeliveryAddress) {
+		if !utils.IsSafeString(order.Status) {
 			c.JSON(400, gin.H{
 				"error":   true,
 				"message": "invalid characters",
 			})
 			return
 		}
-
-		var id int
 
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
@@ -192,7 +191,9 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		err = db.QueryRow("SELECT Id_USERS FROM CONTRACTORS WHERE Id_USERS = '" + strconv.Itoa(order.IdContractor1) + "'").Scan(&id)
+		var idcontractor1 int
+
+		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + strconv.Itoa(order.IdContractor1) + "'").Scan(&idcontractor1)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -201,7 +202,9 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		err = db.QueryRow("SELECT Id_USERS FROM CONTRACTORS WHERE Id_USERS = '" + strconv.Itoa(order.IdContractor2) + "'").Scan(&id)
+		var idcontractor2 int
+
+		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + strconv.Itoa(order.IdContractor2) + "'").Scan(&idcontractor2)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -210,7 +213,9 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		err = db.QueryRow("SELECT Id_USERS FROM CLIENTS WHERE Id_USERS = '" + strconv.Itoa(order.IdClient) + "'").Scan(&id)
+		var idclient int
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + strconv.Itoa(order.IdClient) + "'").Scan(&idclient)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -219,8 +224,9 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO ORDERS (status, price, deliveryaddress, idcontractor1, idcontractor2, idclient) VALUES (?, ?, ?, ?, ?, ?)", order.Status, order.Price, order.DeliveryAddress, order.IdContractor1, order.IdContractor2, order.IdClient)
+		_, err = db.Exec("INSERT INTO ORDERS (status, price, deliveryaddress, Id_CONTRACTORS, Id_CONTRACTORS_1, Id_CLIENTS) VALUES (?, ?, DEFAULT, ?, ?, ?)", order.Status, order.Price, idcontractor1, idcontractor2, idclient)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "can't insert into database",
@@ -265,6 +271,9 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 		}
 
 		var order Order
+
+		order.Price = -1
+
 		err = c.BindJSON(&order)
 		if err != nil {
 			c.JSON(400, gin.H{
@@ -273,8 +282,6 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 			})
 			return
 		}
-
-		order.Price = -1
 
 		var setClause []string
 
@@ -306,7 +313,7 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "status = '"+order.Status+"'")
 		}
 
-		if order.Price > -1 {
+		if order.Price >= 0 {
 			setClause = append(setClause, "price = '"+strconv.FormatFloat(order.Price, 'f', 2, 64)+"'")
 		}
 
@@ -329,8 +336,8 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 		}
 
 		if order.IdContractor1 > 0 {
-			var idInt int
-			err = db.QueryRow("SELECT Id_USERS FROM CONTRACTORS WHERE Id_USERS = '" + strconv.Itoa(order.IdContractor1) + "'").Scan(&idInt)
+			var idcontractor1 int
+			err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_CONTRACTORS = '" + strconv.Itoa(order.IdContractor1) + "'").Scan(&idcontractor1)
 			if err != nil {
 				c.JSON(400, gin.H{
 					"error":   true,
@@ -338,12 +345,12 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 				})
 				return
 			}
-			setClause = append(setClause, "idcontractor1 = '"+strconv.Itoa(order.IdContractor1)+"'")
+			setClause = append(setClause, "Id_CONTRACTORS = '"+strconv.Itoa(order.IdContractor1)+"'")
 		}
 
 		if order.IdContractor2 > 0 {
-			var idInt int
-			err = db.QueryRow("SELECT Id_USERS FROM CONTRACTORS WHERE Id_USERS = '" + strconv.Itoa(order.IdContractor2) + "'").Scan(&idInt)
+			var idcontractor2 int
+			err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_CONTRACTORS = '" + strconv.Itoa(order.IdContractor2) + "'").Scan(&idcontractor2)
 			if err != nil {
 				c.JSON(400, gin.H{
 					"error":   true,
@@ -351,7 +358,7 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 				})
 				return
 			}
-			setClause = append(setClause, "idcontractor2 = '"+strconv.Itoa(order.IdContractor2)+"'")
+			setClause = append(setClause, "ID_CONTRACTORS_1 = '"+strconv.Itoa(order.IdContractor2)+"'")
 		}
 
 		if len(setClause) == 0 {
@@ -361,6 +368,17 @@ func UpdateOrder(tokenAPI string) func(c *gin.Context) {
 			})
 			return
 		}
+
+		var idorder int
+
+		err = db.QueryRow("SELECT Id_ORDERS FROM ORDERS WHERE Id_ORDERS = '" + id + "'").Scan(&idorder)
+			if err != nil {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "order doesn't exist",
+				})
+				return
+			}
 
 		_, err = db.Exec("UPDATE ORDERS SET "+strings.Join(setClause, ", ")+" WHERE Id_ORDERS = ?", id)
 		fmt.Println(err)
@@ -489,7 +507,7 @@ func GetOrderByContractor1ID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 		defer db.Close()
-		rows, err := db.Query("SELECT * FROM ORDERS WHERE Id_CONTRACTOR1 = ?", id)
+		rows, err := db.Query("SELECT * FROM ORDERS WHERE Id_CONTRACTORS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -500,20 +518,17 @@ func GetOrderByContractor1ID(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
-					"message": "can't get orders from database",
+					"message": "chef don't have orders",
 				})
 				return
 			}
 			orders = append(orders, order)
 		}
-		c.JSON(200, gin.H{
-			"error": false,
-			"orders": orders,
-		})
+		c.JSON(200, orders)
 	}
 }
 
@@ -554,7 +569,7 @@ func GetOrderByContractor2ID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 		defer db.Close()
-		rows, err := db.Query("SELECT * FROM ORDERS WHERE Id_CONTRACTOR2 = ?", id)
+		rows, err := db.Query("SELECT * FROM ORDERS WHERE Id_CONTRACTORS_1 = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -565,20 +580,17 @@ func GetOrderByContractor2ID(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
-					"message": "can't get orders from database",
+					"message": "delivery man don't have orders",
 				})
 				return
 			}
 			orders = append(orders, order)
 		}
-		c.JSON(200, gin.H{
-			"error": false,
-			"orders": orders,
-		})
+		c.JSON(200, orders)
 	}
 }
 
@@ -630,20 +642,17 @@ func GetOrderByStatus(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
-					"message": "can't get orders from database",
+					"message": "no order with this status",
 				})
 				return
 			}
 			orders = append(orders, order)
 		}
-		c.JSON(200, gin.H{
-			"error": false,
-			"orders": orders,
-		})
+		c.JSON(200, orders)
 	}
 }
 
@@ -684,7 +693,7 @@ func GetOrderByClientID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 		defer db.Close()
-		rows, err := db.Query("SELECT * FROM ORDERS WHERE Id_CLIENT = ?", id)
+		rows, err := db.Query("SELECT * FROM ORDERS WHERE Id_CLIENTS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -695,20 +704,17 @@ func GetOrderByClientID(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
-					"message": "can't get orders from database",
+					"message": "client don't have orders",
 				})
 				return
 			}
 			orders = append(orders, order)
 		}
-		c.JSON(200, gin.H{
-			"error": false,
-			"orders": orders,
-		})
+		c.JSON(200, orders)
 	}
 }
 

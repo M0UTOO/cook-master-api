@@ -196,14 +196,6 @@ func PostFood(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if food.Picture == "" || !utils.IsSafeString(food.Picture) || len(food.Picture) < 0 || len(food.Picture) > 255 {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "picture can't be empty or contain sql injection",
-			})
-			return
-		}
-
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -225,7 +217,7 @@ func PostFood(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO FOODS (name, description, price, picture) VALUES (?, ?, ?, ?)", food.Name, food.Description, food.Price, food.Picture)
+		_, err = db.Exec("INSERT INTO FOODS (name, description, price, picture) VALUES (?, ?, ?, DEFAULT)", food.Name, food.Description, food.Price)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,

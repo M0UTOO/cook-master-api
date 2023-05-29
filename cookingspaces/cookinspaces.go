@@ -875,3 +875,113 @@ func DeleteABooks(tokenAPI string) func(c *gin.Context) {
 		})
 	}
 }
+
+func DeleteCookingSpace(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id is not safe",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idcookingspace int
+
+		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?", id).Scan(&idcookingspace)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cookingspace doesn't exist",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM IS_HOSTED WHERE Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "can't delete cookingspace",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM BOOKS WHERE Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "can't delete cookingspace",
+			})
+			return
+		}
+
+		_, err = db.Exec("UPDATE COOKING_ITEMS SET Id_COOKING_SPACES = 1 WHERE Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot update cookingitems",
+			})
+			return
+		}
+
+		_, err = db.Exec("UPDATE INGREDIENTS SET Id_COOKING_SPACES = 1 WHERE Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot update ingredients",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "can't delete cookingspace",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "cookingspace deleted",
+		})
+	}
+}

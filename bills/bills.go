@@ -5,6 +5,8 @@ import (
 	"cook-master-api/utils"
 	"database/sql"
 	"strconv"
+	"strings"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -105,9 +107,23 @@ func GetBillsByUserID(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		iduser := c.Param("iduser")
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
 
-		rows, err := db.Query("SELECT * FROM BILLS WHERE ID_USERS = ?", iduser)
+		rows, err := db.Query("SELECT * FROM BILLS WHERE ID_USERS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -165,6 +181,20 @@ func GetBillByID(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
 
 		rows, err := db.Query("SELECT * FROM BILLS WHERE ID_BILLS = ?", id)
 		if err != nil {
@@ -301,8 +331,9 @@ func PostBill(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO BILLS (name, type, createdAt, Id_USERS) VALUES (?, ?, DEFAULT, ?)", bill.Name, bill.Type, bill.CreatedAt, bill.IdUser)
+		_, err = db.Exec("INSERT INTO BILLS (name, type, createdAt, Id_USERS) VALUES (?, ?, DEFAULT, ?)", bill.Name, bill.Type, bill.IdUser)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "can't insert into database",
@@ -337,6 +368,23 @@ func UpdateBill(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id is not safe",
+			})
+			return
+		}
+
 		var bill Bill
 		err = c.BindJSON(&bill)
 		if err != nil {
@@ -347,50 +395,52 @@ func UpdateBill(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if bill.Name == "" {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "missing name",
-			})
-			return
+		var setClause []string
+
+		if bill.Name != "" {
+			if !utils.IsSafeString(bill.Name) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "name is not safe",
+				})
+				return
+			}
+
+			if len(bill.Name) > 255 || len(bill.Name) < 0 {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "name is too long or too short",
+				})
+				return
+			}
+			
+			setClause = append(setClause, "name = '"+bill.Name+"'")
 		}
 
-		if !utils.IsSafeString(bill.Name) {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "name is not safe",
-			})
-			return
+		if bill.Type != "" {
+			if !utils.IsSafeString(bill.Type) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "type is not safe",
+				})
+				return
+			}
+
+			if len(bill.Type) > 50 || len(bill.Type) < 0 {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "type is too long or too short",
+				})
+				return
+			}
+
+			setClause = append(setClause, "type = '"+bill.Type+"'")
 		}
 
-		if len(bill.Name) > 255 || len(bill.Name) < 0 {
+		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
 				"error":   true,
-				"message": "name is too long or too short",
-			})
-			return
-		}
-
-		if bill.Type == "" {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "missing type",
-			})
-			return
-		}
-
-		if !utils.IsSafeString(bill.Type) {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "type is not safe",
-			})
-			return
-		}
-
-		if len(bill.Type) > 50 || len(bill.Type) < 0 {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "type is too long or too short",
+				"message": "no value to update",
 			})
 			return
 		}
@@ -405,20 +455,18 @@ func UpdateBill(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		var id int
+		var idbill int
 
-		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE Id_USERS = '" + strconv.Itoa(bill.IdUser) + "'").Scan(&id)
-		if err != nil {
-			c.JSON(400, gin.H{
+		err = db.QueryRow("SELECT Id_BILLS FROM BILLS WHERE name = ?", bill.Name).Scan(&idbill)
+		if err == nil {
+			c.JSON(500, gin.H{
 				"error":   true,
-				"message": "client doesn't exist",
+				"message": "bill already exist",
 			})
 			return
 		}
 
-		var idbill int
-
-		err = db.QueryRow("SELECT Id_BILLS FROM BILLS WHERE name = ?", bill.Name).Scan(&idbill)
+		err = db.QueryRow("SELECT Id_BILLS FROM BILLS WHERE Id_BILLS = ?", id).Scan(&idbill)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -427,11 +475,21 @@ func UpdateBill(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("UPDATE BILLS SET name = ?, type = ?, Id_USERS = ?, WHERE Id_BILLS = ?", bill.Name, bill.Type, bill.IdUser, idbill)
+		stmt, err := db.Prepare("UPDATE BILLS SET " + strings.Join(setClause, ", ") + " WHERE Id_BILLS = ?")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
-				"message": "can't update database",
+				"message": "can't prepare statement",
+			})
+			return
+		}
+		defer stmt.Close()
+
+		_, err = stmt.Exec(id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "can't update bill",
 			})
 			return
 		}
@@ -492,7 +550,7 @@ func DeleteBill(tokenAPI string) func(c *gin.Context) {
 
 		var idbill int
 
-		err = db.QueryRow("SELECT Id_BILLS FROM BILLS WHERE Id_BIILS = ?", id).Scan(&idbill)
+		err = db.QueryRow("SELECT Id_BILLS FROM BILLS WHERE Id_BILLS = ?", id).Scan(&idbill)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,

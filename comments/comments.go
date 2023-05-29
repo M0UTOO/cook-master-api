@@ -5,6 +5,8 @@ import (
 	"cook-master-api/utils"
 	"database/sql"
 	"strconv"
+	"strings"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -12,7 +14,7 @@ import (
 
 type Comment struct {
 	IdComment      int     `json:"idcomment"`
-	Grade 	  int  `json:"grade"`
+	Grade 	  float64  `json:"grade"`
 	Content string  `json:"content"`
 	Picture	   string  `json:"picture"`
 	IdClient 	 int     `json:"idclient"`
@@ -154,6 +156,7 @@ func GetCommentsByEventID(tokenAPI string) func(c *gin.Context) {
 			var comment Comment
 			err = rows.Scan(&comment.IdComment, &comment.Grade, &comment.Content, &comment.Picture, &comment.IdClient, &comment.IdEvent)
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error":   true,
 					"message": "can't scan rows",
@@ -227,14 +230,6 @@ func PostComment(tokenAPI string) func(c *gin.Context) {
 			c.JSON(400, gin.H{
 				"error":   true,
 				"message": "content can't contain sql injection",
-			})
-			return
-		}
-
-		if comment.Picture == "" {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "picture can't be empty",
 			})
 			return
 		}
@@ -454,55 +449,58 @@ func UpdateComment(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if comment.Grade < 1 || comment.Grade > 5 {
+		var setClause []string
+
+		if comment.Grade != 0 {
+			if comment.Grade < 1 || comment.Grade > 5 {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "grade must be between 1 and 5",
+				})
+				return
+			}
+			setClause = append(setClause, "Grade = '"+strconv.FormatFloat(comment.Grade, 'f', 2, 64)+"'")
+		}
+
+		if comment.Content != "" {
+			if !utils.IsSafeString(comment.Content) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "content can't contain sql injection",
+				})
+				return
+			}
+			setClause = append(setClause, "Content = '"+comment.Content+"'")
+		}
+
+		if comment.Picture != "" {
+			if !utils.IsSafeString(comment.Picture) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "picture can't contain sql injection",
+				})
+				return
+			}
+
+			if len(comment.Picture) > 255 || len(comment.Picture) < 0 {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "picture can't be more than 255 characters or less than 0",
+				})
+				return
+			}
+			setClause = append(setClause, "Picture = '"+comment.Picture+"'")
+		}
+
+		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
 				"error":   true,
-				"message": "grade must be between 1 and 5",
+				"message": "no value to update",
 			})
 			return
 		}
 
-		if comment.Content == "" {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "content can't be empty",
-			})
-			return
-		}
-
-		if !utils.IsSafeString(comment.Content) {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "content can't contain sql injection",
-			})
-			return
-		}
-
-		if comment.Picture == "" {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "picture can't be empty",
-			})
-			return
-		}
-
-		if !utils.IsSafeString(comment.Picture) {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "picture can't contain sql injection",
-			})
-			return
-		}
-
-		if len(comment.Picture) > 255 || len(comment.Picture) < 0 {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "picture must be between 0 and 255 characters",
-			})
-			return
-		}
-
-		stmt, err := db.Prepare("UPDATE COMMENTS SET Grade = ?, Content = ?, Picture = ? WHERE Id_COMMENTS = ?")
+		stmt, err := db.Prepare("UPDATE COMMENTS SET " + strings.Join(setClause, ", ") + " WHERE Id_COMMENTS = ?")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -512,7 +510,7 @@ func UpdateComment(tokenAPI string) func(c *gin.Context) {
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(comment.Grade, comment.Content, comment.Picture, idComment)
+		_, err = stmt.Exec(idComment)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,

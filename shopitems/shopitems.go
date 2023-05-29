@@ -214,14 +214,6 @@ func PostShopItem(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if shopitem.Picture == "" || !utils.IsSafeString(shopitem.Picture) || len(shopitem.Picture) < 0 || len(shopitem.Picture) > 255 {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "picture can't be empty, contain sql injection or wrong lenght",
-			})
-			return
-		}
-
 		db, err := sql.Open("mysql", token.DbLogins)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -243,7 +235,7 @@ func PostShopItem(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO SHOP_ITEMS (name, description, price, stock, reward, picture) VALUES (?, ?, ?, ?, ?, ?)", shopitem.Name, shopitem.Description, shopitem.Price, shopitem.Stock, shopitem.Reward, shopitem.Picture)
+		_, err = db.Exec("INSERT INTO SHOP_ITEMS (name, description, price, stock, reward, picture) VALUES (?, ?, ?, ?, ?, DEFAULT)", shopitem.Name, shopitem.Description, shopitem.Price, shopitem.Stock, shopitem.Reward)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,

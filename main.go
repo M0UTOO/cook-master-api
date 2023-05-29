@@ -91,21 +91,21 @@ func main() {
 	cookingSpace.DELETE("/premise/:id", cookingspaces.DeleteCookingSpaceFromAPremise(tokenAPI))   // WORKING
 	cookingSpace.PATCH("/books/:idclient/:idcookingspace", cookingspaces.AddABooks(tokenAPI))     // WORKING
 	cookingSpace.DELETE("/books/:idclient/:idcookingspace", cookingspaces.DeleteABooks(tokenAPI)) // WORKING
-	// TO DO ADD DELETE A COOKING SPACE
+	cookingSpace.DELETE("/:id", cookingspaces.DeleteCookingSpace(tokenAPI)) // WORKING
 	cookingItem := r.Group("/cookingitem")
-	cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI))                              
-	cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI))                           
-	cookingItem.POST("/", cookingitems.PostCookingItem(tokenAPI))                                
-	cookingItem.DELETE("/:id", cookingitems.DeleteCookingItem(tokenAPI))                         
-	cookingItem.PATCH("/:id", cookingitems.UpdateCookingItem(tokenAPI))                          
-	cookingItem.GET("/cookingspace/:id", cookingitems.GetCookingItemsByCookingSpaceID(tokenAPI)) 
+	cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI))       // WORKING                       
+	cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI))   // WORKING                        
+	cookingItem.POST("/", cookingitems.PostCookingItem(tokenAPI))       // WORKING                         
+	cookingItem.DELETE("/:id", cookingitems.DeleteCookingItem(tokenAPI))           // WORKING              
+	cookingItem.PATCH("/:id", cookingitems.UpdateCookingItem(tokenAPI))          // WORKING                
+	cookingItem.GET("/cookingspace/:id", cookingitems.GetCookingItemsByCookingSpaceID(tokenAPI)) // WORKING
 	ingredient := r.Group("/ingredient")
-	ingredient.GET("/all", ingredients.GetIngredients(tokenAPI))                              
-	ingredient.GET("/:id", ingredients.GetIngredientByID(tokenAPI))                           
-	ingredient.POST("/", ingredients.PostIngredient(tokenAPI))                                
-	ingredient.DELETE("/:id", ingredients.DeleteIngredient(tokenAPI))                         
-	ingredient.PATCH("/:id", ingredients.UpdateIngredient(tokenAPI))                          
-	ingredient.GET("/cookingspace/:id", ingredients.GetIngredientsByCookingSpaceID(tokenAPI)) 
+	ingredient.GET("/all", ingredients.GetIngredients(tokenAPI))                  // WORKING            
+	ingredient.GET("/:id", ingredients.GetIngredientByID(tokenAPI))                         // WORKING   
+	ingredient.POST("/", ingredients.PostIngredient(tokenAPI))                           // WORKING     
+	ingredient.DELETE("/:id", ingredients.DeleteIngredient(tokenAPI))               // WORKING          
+	ingredient.PATCH("/:id", ingredients.UpdateIngredient(tokenAPI))                  // WORKING        
+	ingredient.GET("/cookingspace/:id", ingredients.GetIngredientsByCookingSpaceID(tokenAPI)) // WORKING
 	lesson := r.Group("/lesson")
 	lesson.GET("/all", lessons.GetLessons(tokenAPI))                      // WORKING
 	lesson.GET("/:id", lessons.GetLessonByID(tokenAPI))                   // WORKING
@@ -116,43 +116,44 @@ func main() {
 	lesson.PATCH("/:id", lessons.UpdateLesson(tokenAPI)) // WORKING
 	lesson.DELETE("/:id", lessons.DeleteLesson(tokenAPI)) // WORKING
 	food := r.Group("/food")
-	food.GET("/all", foods.GetFoods(tokenAPI))      
-	food.GET("/:id", foods.GetFoodByID(tokenAPI))   
-	food.POST("/", foods.PostFood(tokenAPI))        
-	food.DELETE("/:id", foods.DeleteFood(tokenAPI)) 
-	food.PATCH("/:id", foods.UpdateFood(tokenAPI))  
+	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
+	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING
+	food.POST("/", foods.PostFood(tokenAPI))        // WORKING
+	food.DELETE("/:id", foods.DeleteFood(tokenAPI)) // WORKING
+	food.PATCH("/:id", foods.UpdateFood(tokenAPI))  // WORKING
 	shopitem := r.Group("/shopitem")
-	shopitem.GET("/all", shopitems.GetShopItems(tokenAPI))      
-	shopitem.GET("/:id", shopitems.GetShopItemByID(tokenAPI))   
-	shopitem.POST("/", shopitems.PostShopItem(tokenAPI))        
-	shopitem.DELETE("/:id", shopitems.DeleteShopItem(tokenAPI)) 
-	shopitem.PATCH("/:id", shopitems.UpdateShopItem(tokenAPI))  
+	shopitem.GET("/all", shopitems.GetShopItems(tokenAPI))      // WORKING
+	shopitem.GET("/:id", shopitems.GetShopItemByID(tokenAPI))   // WORKING
+	shopitem.POST("/", shopitems.PostShopItem(tokenAPI))        // WORKING
+	shopitem.DELETE("/:id", shopitems.DeleteShopItem(tokenAPI)) // WORKING
+	shopitem.PATCH("/:id", shopitems.UpdateShopItem(tokenAPI))  // WORKING
 	comment := r.Group("/comment")
-	comment.GET("/event/:id", comments.GetCommentsByClientID(tokenAPI))   
-	comment.GET("/client/:id", comments.GetCommentsByEventID(tokenAPI))   
-	comment.POST("/", comments.PostComment(tokenAPI))        
-	comment.DELETE("/:id", comments.DeleteComment(tokenAPI)) 
-	comment.PATCH("/:id", comments.UpdateComment(tokenAPI))  
+	comment.GET("/event/:id", comments.GetCommentsByEventID(tokenAPI))   // WORKING
+	comment.GET("/client/:id", comments.GetCommentsByClientID(tokenAPI))   // WORKING
+	comment.POST("/", comments.PostComment(tokenAPI))        // WORKING
+	comment.DELETE("/:id", comments.DeleteComment(tokenAPI)) // WORKING
+	comment.PATCH("/:id", comments.UpdateComment(tokenAPI))  // WORKING
 	bill := r.Group("/bill")
-	bill.GET("/all", bills.GetBills(tokenAPI))      
-	bill.GET("/:id", bills.GetBillByID(tokenAPI))   
-	bill.GET("/user/:id", bills.GetBillsByUserID(tokenAPI))   
-	bill.POST("/", bills.PostBill(tokenAPI))        
-	bill.DELETE("/:id", bills.DeleteBill(tokenAPI)) 
-	bill.PATCH("/:id", bills.UpdateBill(tokenAPI))  
+	bill.GET("/all", bills.GetBills(tokenAPI))      // WORKING
+	bill.GET("/:id", bills.GetBillByID(tokenAPI))   // WORKING
+	bill.GET("/user/:id", bills.GetBillsByUserID(tokenAPI))   // WORKING
+	bill.POST("/", bills.PostBill(tokenAPI))        // WORKING
+	bill.DELETE("/:id", bills.DeleteBill(tokenAPI)) // WORKING
+	bill.PATCH("/:id", bills.UpdateBill(tokenAPI))  // WORKING
 	order := r.Group("/order")
-	order.GET("/all", orders.GetOrders(tokenAPI))      
-	order.GET("/:id", orders.GetOrder(tokenAPI))   
-	order.GET("/chef/:id", orders.GetOrderByContractor1ID(tokenAPI))   
-	order.GET("/deliveryman/:id", orders.GetOrderByContractor2ID(tokenAPI))   
-	order.GET("/client/:id", orders.GetOrderByClientID(tokenAPI))   
-	order.POST("/", orders.PostOrder(tokenAPI))        
-	order.DELETE("/:id", orders.DeleteOrder(tokenAPI)) 
-	order.PATCH("/:id", orders.UpdateOrder(tokenAPI))  
-	order.PATCH("/item/:iditem/:idorder", orders.AddItemToAnOrder(tokenAPI))  
-	order.DELETE("/item/:iditem/:idorder", orders.DeleteItemFromAnOrder(tokenAPI))  
-	order.PATCH("/food/:idfood/:idorder", orders.AddFoodToAnOrder(tokenAPI))  
-	order.DELETE("/food/:idfood/:idorder", orders.DeleteFoodFromAnOrder(tokenAPI))  
+	order.GET("/all", orders.GetOrders(tokenAPI))     // WORKING 
+	order.GET("/:id", orders.GetOrder(tokenAPI))   // WORKING
+	order.GET("/chef/:id", orders.GetOrderByContractor1ID(tokenAPI))   // WORKING
+	order.GET("/deliveryman/:id", orders.GetOrderByContractor2ID(tokenAPI))   // WORKING
+	order.GET("/client/:id", orders.GetOrderByClientID(tokenAPI))   // WORKING
+	order.GET("/status/:status", orders.GetOrderByStatus(tokenAPI))   // WORKING
+	order.POST("/", orders.PostOrder(tokenAPI))        // WORKING
+	order.DELETE("/:id", orders.DeleteOrder(tokenAPI)) // WORKING
+	order.PATCH("/:id", orders.UpdateOrder(tokenAPI))  // WORKING
+	order.PATCH("/item/:iditem/:idorder", orders.AddItemToAnOrder(tokenAPI))  // WORKING
+	order.DELETE("/item/:iditem/:idorder", orders.DeleteItemFromAnOrder(tokenAPI))  // WORKING
+	order.PATCH("/food/:idfood/:idorder", orders.AddFoodToAnOrder(tokenAPI))  // WORKING
+	order.DELETE("/food/:idfood/:idorder", orders.DeleteFoodFromAnOrder(tokenAPI))  // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
