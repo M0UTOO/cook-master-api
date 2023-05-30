@@ -26,6 +26,11 @@ type Event struct {
 	IdGroups          int    `json:"idgroups"`
 }
 
+type EventGroup struct {
+	IdEvent           int    `json:"idevent"`
+	Name              string `json:"name"`
+}
+
 func GetEvents(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
@@ -71,6 +76,66 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 		for rows.Next() {
 			var event Event
 			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdGroups)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "err on scan rows",
+				})
+				return
+			}
+			events = append(events, event)
+		}
+
+		c.JSON(200, events)
+	}
+}
+
+func GetGroupEvents(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT * FROM GROUPS")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get groups",
+			})
+			return
+		}
+		defer rows.Close()
+
+		var events []EventGroup
+
+		for rows.Next() {
+			var event EventGroup
+			err = rows.Scan(&event.IdEvent, &event.Name)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{

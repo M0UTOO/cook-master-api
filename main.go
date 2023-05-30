@@ -76,6 +76,7 @@ func main() {
 	event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        // WORKING
 	event.PATCH("/host/:idevent/:idcookingspace", events.AddEventToAnCookingSpace(tokenAPI))     // WORKING
 	event.DELETE("/host/:idevent/:idcookingspace", events.DeleteEventToAnCookingSpace(tokenAPI)) // WORKING
+	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING
@@ -116,6 +117,7 @@ func main() {
 	lesson.DELETE("/group/:id", lessons.DeleteLessonFromAGroup(tokenAPI)) // WORKING
 	lesson.PATCH("/:id", lessons.UpdateLesson(tokenAPI)) // WORKING
 	lesson.DELETE("/:id", lessons.DeleteLesson(tokenAPI)) // WORKING
+	lesson.GET("/group/all", lessons.GetGroupLessons(tokenAPI)) // WORKING
 	food := r.Group("/food")
 	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
 	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING

@@ -21,6 +21,11 @@ type Lesson struct {
 	IdLessonGroup     int    `json:"idlessongroup"`
 }
 
+type LessonGroup struct {
+	IdLessonGroup     int    `json:"idlessongroup"`
+	Name              string `json:"name"`
+}
+
 func GetLessons(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
@@ -80,6 +85,68 @@ func GetLessons(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, lessons)
 	}
 }
+
+func GetGroupLessons(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT * FROM LESSONS_GROUPS")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get lessons group",
+			})
+			return
+		}
+		defer rows.Close()
+
+		var lessons []LessonGroup
+
+		for rows.Next() {
+			var lesson LessonGroup
+			err = rows.Scan(&lesson.IdLessonGroup, &lesson.Name)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "err on scan rows",
+				})
+				return
+			}
+			lessons = append(lessons, lesson)
+		}
+
+		c.JSON(200, lessons)
+	}
+}
+
+
 
 func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
