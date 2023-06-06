@@ -80,6 +80,13 @@ func GetBills(tokenAPI string) func(c *gin.Context) {
 func GetBillsByUserID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
+		type BillReq struct {
+			IdBill 	int     `json:"idbill"`
+			Name 	string  `json:"name"`
+			Type 	string  `json:"type"`
+			CreatedAt string  `json:"createdat"`
+		}
+
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil {
 			c.JSON(498, gin.H{
@@ -123,7 +130,18 @@ func GetBillsByUserID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		rows, err := db.Query("SELECT * FROM BILLS WHERE ID_USERS = ?", id)
+		var iduser int
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + id + "'").Scan(&iduser)
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   true,
+				"message": "client doesn't exist",
+			})
+			return
+		}
+
+		rows, err := db.Query("SELECT Id_BILLS, name, type, createdAt FROM BILLS WHERE ID_USERS = ?", id)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -132,10 +150,10 @@ func GetBillsByUserID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var bills []Bill
+		var bills []BillReq
 		for rows.Next() {
-			var bill Bill
-			err = rows.Scan(&bill.IdBill, &bill.Name, &bill.Type, &bill.CreatedAt, &bill.IdUser)
+			var bill BillReq
+			err = rows.Scan(&bill.IdBill, &bill.Name, &bill.Type, &bill.CreatedAt)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,

@@ -1048,6 +1048,480 @@ func DeleteContractorFromAnEvent(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
+func GetManagersByEventID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type ManagerReq struct {
+			IdUser string `json:"iduser"`
+			Email  string `json:"email"`
+			IdManager string `json:"idmanager"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idevent := c.Param("idevent")
+		if idevent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idevent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idmanager string
+
+		err = db.QueryRow("SELECT Id_MANAGERS FROM ORGANIZES WHERE Id_EVENTS = '" + idevent + "'").Scan(&idmanager)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var iduser string
+
+		err = db.QueryRow("SELECT Id_USERS FROM MANAGERS WHERE Id_MANAGERS = '" + idmanager + "'").Scan(&iduser)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var managers []ManagerReq
+		var manager ManagerReq
+
+		manager.IdManager = idmanager
+
+		err = db.QueryRow("SELECT Id_USERS, email FROM USERS WHERE Id_USERS = '" + iduser + "'").Scan(&manager.IdUser, &manager.Email)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		managers = append(managers, manager)
+
+		c.JSON(200, managers)
+	}
+}
+
+func GetGroupsByEventID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type GroupReq struct {
+			IdGroup string `json:"idgroup"`
+			Name 		 string `json:"name"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idevent := c.Param("idevent")
+		if idevent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idevent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idgroup string
+
+		err = db.QueryRow("SELECT Id_GROUPS FROM EVENTS WHERE Id_EVENTS = '" + idevent + "'").Scan(&idgroup)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var groups []GroupReq
+		var group GroupReq
+
+		err = db.QueryRow("SELECT Id_GROUPS, Name FROM GROUPS WHERE Id_GROUPS = '" + idgroup + "'").Scan(&group.IdGroup, &group.Name)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cookingspace not found",
+			})
+			return
+		}
+
+		groups = append(groups, group)
+
+		c.JSON(200, groups)
+	}
+}
+
+func GetClientsByEventID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type ClientReq struct {
+			IdUser string `json:"iduser"`
+			Email  string `json:"email"`
+			IdClient string `json:"idclient"`
+			IsPresent int `json:"ispresent"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idevent := c.Param("idevent")
+		if idevent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idevent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var clients []ClientReq
+		var client ClientReq
+
+		rows, err := db.Query("SELECT Id_CLIENTS, IsPresent FROM PARTICIPATES WHERE Id_EVENTS = '" + idevent + "'")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			err = rows.Scan(&client.IdClient, &client.IsPresent)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "error while scanning",
+				})
+				return
+			}
+
+			err = db.QueryRow("SELECT Id_USERS FROM CLIENTS WHERE Id_CLIENTS = '" + client.IdClient + "'").Scan(&client.IdUser)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "client not found",
+				})
+				return
+			}
+
+			err = db.QueryRow("SELECT email FROM USERS WHERE Id_USERS = '" + client.IdUser + "'").Scan(&client.Email)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "user not found",
+				})
+				return
+			}
+
+			clients = append(clients, client)
+		}
+
+		c.JSON(200, clients)
+	}
+}
+
+
+func GetCookingSpacesByEventID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type CookingSpaceReq struct {
+			IdCookingSpace string `json:"idcookingspace"`
+			Name 		 string `json:"name"`
+			IdPremise string `json:"idpremise"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idevent := c.Param("idevent")
+		if idevent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idevent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idcookingspace string
+
+		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM IS_HOSTED WHERE Id_EVENTS = '" + idevent + "'").Scan(&idcookingspace)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var cookingspaces []CookingSpaceReq
+		var cookingspace CookingSpaceReq
+
+		err = db.QueryRow("SELECT Name, Id_PREMISES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = '" + idcookingspace + "'").Scan(&cookingspace.Name, &cookingspace.IdPremise)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cookingspace not found",
+			})
+			return
+		}
+
+		cookingspace.IdCookingSpace = idcookingspace
+
+		cookingspaces = append(cookingspaces, cookingspace)
+
+		c.JSON(200, cookingspaces)
+	}
+}
+
+
+func GetContractorsByEventID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type ContractorReq struct {
+			IdContractor string `json:"idcontractor"`
+			Email        string `json:"email"`
+			IdUser	   string `json:"iduser"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idEvent := c.Param("idevent")
+		if idEvent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idEvent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT Id_CONTRACTORS FROM ANIMATES WHERE Id_EVENTS = '" + idEvent + "'")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "contractors not found",
+			})
+			return
+		}
+		defer rows.Close()
+
+		var contractors []ContractorReq	
+
+		for rows.Next() {
+			var contractor ContractorReq
+			var idcontractor string
+			err = rows.Scan(&idcontractor)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot scan contractors",
+				})
+				return
+			}
+
+			var iduser string
+
+			err = db.QueryRow("SELECT Id_USERS FROM CONTRACTORS WHERE Id_CONTRACTORS = '" + idcontractor + "'").Scan(&iduser)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "event not found",
+				})
+				return
+			}
+
+			err = db.QueryRow("SELECT Id_USERS, email FROM USERS WHERE Id_USERS = '" + iduser + "'").Scan(&contractor.IdUser, &contractor.Email)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "event not found",
+				})
+				return
+			}
+
+			contractor.IdContractor = idcontractor
+
+			contractors = append(contractors, contractor)
+		}
+
+		c.JSON(200, contractors)
+	}
+}
+
 func AddClientToAnEvent(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		tokenHeader := c.Request.Header["Token"]

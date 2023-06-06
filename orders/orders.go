@@ -1052,3 +1052,107 @@ func DeleteFoodFromAnOrder(tokenAPI string) func(c *gin.Context) {
 		})
 	}
 }
+
+func GetItemsByOrderID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type Item struct {
+			IdItem int `json:"iditem"`
+			Name string `json:"name"`
+			Price float64 `json:"price"`
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+		var items []Item
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to database",
+			})
+			return
+		}
+		defer db.Close()
+		rows, err := db.Query("SELECT Id_SHOP_ITEMS, name, price FROM SHOP_ITEMS WHERE Id_SHOP_ITEMS IN (SELECT Id_SHOP_ITEMS FROM CONTAINS_ITEM WHERE Id_ORDERS = ?)", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "can't get items from database",
+			})
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var item Item
+			err := rows.Scan(&item.IdItem, &item.Name, &item.Price)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "no item in this order",
+				})
+				return
+			}
+			items = append(items, item)
+		}
+		c.JSON(200, items)
+	}
+}
+
+func GetFoodsByOrderID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type Food struct {
+			IdFood int `json:"idfood"`
+			Name string `json:"name"`
+			Price float64 `json:"price"`
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+		var foods []Food
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to database",
+			})
+			return
+		}
+		defer db.Close()
+		rows, err := db.Query("SELECT Id_FOODS, name, price FROM FOODS WHERE Id_FOODS IN (SELECT Id_FOODS FROM CONTAINS_FOOD WHERE Id_ORDERS = ?)", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "can't get foods from database",
+			})
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var food Food
+			err := rows.Scan(&food.IdFood, &food.Name, &food.Price)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "no food in this order",
+				})
+				return
+			}
+			foods = append(foods, food)
+		}
+		c.JSON(200, foods)
+	}
+}

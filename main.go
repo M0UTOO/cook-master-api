@@ -34,7 +34,7 @@ func main() {
 	user.PATCH("/:id", users.UpdateUser(tokenAPI))               // WORKING
 	user.GET("/all", users.GetUsers(tokenAPI))                   // WORKING
 	user.POST("/", users.PostUser(tokenAPI))                     // WORKING
-	user.GET("/login", users.LoginUser(tokenAPI)) 				 // WORKING
+	user.POST("/login", users.LoginUser(tokenAPI)) 				 // WORKING
 	user.DELETE("/:id", users.DeleteUser(tokenAPI))              // WORKING
 	user.GET("/password", users.GetPasswordByEmail(tokenAPI)) // WORKING
 	client := r.Group("/client")
@@ -71,6 +71,11 @@ func main() {
 	event.PATCH("/:id", events.UpdateEvent(tokenAPI))                                            // WORKING
 	event.GET("/animate/:idevent/:iduser", events.AddContractorToAnEvent(tokenAPI))              // WORKING
 	event.DELETE("/animate/:idevent/:iduser", events.DeleteContractorFromAnEvent(tokenAPI))      // WORKING
+	event.GET("/animate/:idevent", events.GetContractorsByEventID(tokenAPI))                     // WORKING
+	event.GET("/organize/:idevent", events.GetManagersByEventID(tokenAPI))                       // WORKING
+	event.GET("/participate/:idevent", events.GetClientsByEventID(tokenAPI))                      // WORKING
+	event.GET("/groups/:idevent", events.GetGroupsByEventID(tokenAPI))                             // WORKING
+	event.GET("/host/:idevent", events.GetCookingSpacesByEventID(tokenAPI))                       // WORKING
 	event.GET("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              // WORKING
 	event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI))      // WORKING
 	event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        // WORKING
@@ -157,6 +162,8 @@ func main() {
 	order.DELETE("/item/:iditem/:idorder", orders.DeleteItemFromAnOrder(tokenAPI))  // WORKING
 	order.PATCH("/food/:idfood/:idorder", orders.AddFoodToAnOrder(tokenAPI))  // WORKING
 	order.DELETE("/food/:idfood/:idorder", orders.DeleteFoodFromAnOrder(tokenAPI))  // WORKING
+	order.GET("/item/:id", orders.GetItemsByOrderID(tokenAPI))  // WORKING
+	order.GET("/food/:id", orders.GetFoodsByOrderID(tokenAPI))  // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
