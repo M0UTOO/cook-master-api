@@ -124,6 +124,7 @@ func main() {
 	lesson.PATCH("/:id", lessons.UpdateLesson(tokenAPI)) // WORKING
 	lesson.DELETE("/:id", lessons.DeleteLesson(tokenAPI)) // WORKING
 	lesson.GET("/group/all", lessons.GetGroupLessons(tokenAPI)) // WORKING
+	lesson.GET("/user/:id", lessons.GetUserIdByLessonId(tokenAPI)) // WORKING
 	food := r.Group("/food")
 	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
 	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING

@@ -379,7 +379,9 @@ func Postlesson(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		err = db.QueryRow("SELECT Id_LESSONS_GROUPS FROM LESSONS_GROUPS WHERE Id_LESSONS_GROUPS = 1").Scan(&idContractor)
+		var idlesson int
+
+		err = db.QueryRow("SELECT Id_LESSONS_GROUPS FROM LESSONS_GROUPS WHERE Id_LESSONS_GROUPS = 1").Scan(&idlesson)
 		if err != nil {
 			_, err := db.Exec("INSERT INTO LESSONS_GROUPS (name) VALUES (?)", "default")
 			fmt.Println(err)
@@ -395,6 +397,7 @@ func Postlesson(tokenAPI string) func(c *gin.Context) {
 		result, err := db.Exec("INSERT INTO LESSONS (Name, Content, Description, Difficulty, group_display_order, Id_LESSONS_GROUPS) VALUES (?, ?, ?, ?, ?, ?)", lesson.Name, lesson.Content, lesson.Description, lesson.Difficulty, 0, 1)
 		fmt.Println(err)
 		if err != nil {
+			
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "cannot insert lesson",
@@ -506,6 +509,17 @@ func AddLessonToAGroup(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 		defer db.Close()
+
+		var idLessonId int
+
+		err = db.QueryRow("SELECT Id_LESSONS FROM LESSONS WHERE Id_LESSONS = '" + id + "'").Scan(&idLessonId)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get lesson",
+			})
+			return
+		}
 
 		var idGroup int
 
@@ -843,6 +857,65 @@ func UpdateLesson(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"error":   false,
 			"message": "lesson updated",
+		})
+	}
+}
+
+func GetUserIdByLessonId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+			return
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+		var idUser int
+		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE Id_USERS = (SELECT Id_USERS FROM CONTRACTORS WHERE Id_CONTRACTORS = (SELECT Id_CONTRACTORS FROM TEACHES WHERE Id_LESSONS = ?))", id).Scan(&idUser)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get user id",
+			})
+			return
+		}
+		c.JSON(200, gin.H{
+			"error":   false,
+			"id": idUser,
 		})
 	}
 }
