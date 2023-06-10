@@ -235,7 +235,7 @@ func PostShopItem(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO SHOP_ITEMS (name, description, price, stock, reward, picture) VALUES (?, ?, ?, ?, ?, DEFAULT)", shopitem.Name, shopitem.Description, shopitem.Price, shopitem.Stock, shopitem.Reward)
+		rows, err := db.Exec("INSERT INTO SHOP_ITEMS (name, description, price, stock, reward, picture) VALUES (?, ?, ?, ?, ?, DEFAULT)", shopitem.Name, shopitem.Description, shopitem.Price, shopitem.Stock, shopitem.Reward)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -244,8 +244,11 @@ func PostShopItem(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		itemid, err := rows.LastInsertId()
+
 		c.JSON(200, gin.H{
 			"error":   false,
+			"id":      itemid,
 			"message": "shopitem added",
 		})
 	}

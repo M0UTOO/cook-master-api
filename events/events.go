@@ -409,6 +409,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 
 		c.JSON(200, gin.H{
 			"error":   false,
+			"id":      lastId,
 			"message": "event inserted",
 		})
 	}

@@ -4,7 +4,6 @@ import (
 	"cook-master-api/token"
 	"cook-master-api/utils"
 	"database/sql"
-	"strconv"
 	"fmt"
 	"strings"
 	"github.com/gin-gonic/gin"
@@ -14,7 +13,7 @@ import (
 type Premise struct {
 	IdPremise int `json:"idPremise"`
 	Name string `json:"name"`
-	StreetNumber int `json:"streetNumber"`
+	StreetNumber string `json:"streetNumber"`
 	StreetName string `json:"streetName"`
 	City string `json:"city"`
 	Country string `json:"country"`
@@ -172,39 +171,39 @@ func PostPremise(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		if premise.Name == "" || !utils.IsSafeString(premise.Name) {
+		if premise.Name == "" || !utils.IsSafeString(premise.Name) || len(premise.Name) > 100 || len(premise.Name) < 0 {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "name can't be empty or contain sql injection",
+				"message": "name can't be empty, contain sql injection or have wrong length",
 			})
 			return
 		}
 
-		if premise.StreetNumber < 0 {
+		if premise.StreetName == "" || !utils.IsSafeString(premise.StreetName) || len(premise.StreetName) > 100 || len(premise.StreetName) < 0 {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "street number can't be negative",
+				"message": "street name can't be empty, contain sql injection or have wrong length",
 			})
 			return
 		}
 
-		if premise.StreetName == "" || !utils.IsSafeString(premise.StreetName) {
+		if premise.StreetNumber == "" || !utils.IsSafeString(premise.StreetNumber) || len(premise.StreetNumber) > 10 || len(premise.StreetNumber) < 0 {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "street name can't be empty or contain sql injection",
+				"message": "street name can't be empty, contain sql injection or have wrong length",
 			})
 			return
 		}
 
-		if premise.City == "" || !utils.IsSafeString(premise.City) {
+		if premise.City == "" || !utils.IsSafeString(premise.City) || len(premise.City) > 100 || len(premise.City) < 0 {
 			c.JSON(400, gin.H{
 				"error": true,
-				"message": "city can't be empty or contain sql injection",
+				"message": "city can't be empty, contain sql injection or have wrong length",
 			})
 			return
 		}
 
-		if premise.Country == "" || !utils.IsSafeString(premise.Country) {
+		if premise.Country == "" || !utils.IsSafeString(premise.Country) || len(premise.Country) > 100 || len(premise.Country) < 0 {
 			c.JSON(400, gin.H{
 				"error": true,
 				"message": "country can't be empty or contain sql injection",
@@ -233,7 +232,7 @@ func PostPremise(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO PREMISES (name, streetnumber, streetname, city, country) VALUES (?, ?, ?, ?, ?)", premise.Name, premise.StreetNumber, premise.StreetName, premise.City, premise.Country)
+		rows, err := db.Exec("INSERT INTO PREMISES (name, streetnumber, streetname, city, country) VALUES (?, ?, ?, ?, ?)", premise.Name, premise.StreetNumber, premise.StreetName, premise.City, premise.Country)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -242,8 +241,11 @@ func PostPremise(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		idpremise, err := rows.LastInsertId()
+
 		c.JSON(200, gin.H{
 			"error": false,
+			"id": idpremise,
 			"message": "premise added",
 		})
 	}
@@ -392,8 +394,22 @@ func UpdatePremise(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "name = '"+req.Name+"'")
 		}
 
-		if req.StreetNumber > 0 {
-			setClause = append(setClause, "streetnumber = '"+strconv.Itoa(req.StreetNumber)+"'")
+		if req.StreetNumber != "" {
+			if !utils.IsSafeString(req.StreetNumber) {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "unsafe string",
+				})
+				return
+			}
+			if len(req.StreetNumber) < 0 || len(req.StreetNumber) > 100 {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "streetnumber must be between 0 and 100 characters",
+				})
+				return
+			}
+			setClause = append(setClause, "streetnumber = '"+req.StreetNumber+"'")
 		}
 
 		if req.StreetName != "" {
@@ -440,10 +456,10 @@ func UpdatePremise(tokenAPI string) func(c *gin.Context) {
 				})
 				return
 			}
-			if len(req.Country) < 0 || len(req.Country) > 50 {
+			if len(req.Country) < 0 || len(req.Country) > 100 {
 				c.JSON(500, gin.H{
 					"error": true,
-					"message": "country must be between 0 and 50 characters",
+					"message": "country must be between 0 and 100 characters",
 				})
 				return
 			}

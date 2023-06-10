@@ -270,7 +270,7 @@ func PostComment(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		stmt, err := db.Prepare("INSERT INTO COMMENTS (Grade, Content, Picture, Id_CLIENTS, Id_EVENTS) VALUES (?, ?, ?, ?, ?)")
+		rows, err := db.Exec("INSERT INTO COMMENTS (Grade, Content, Picture, Id_CLIENTS, Id_EVENTS) VALUES (?, ?, ?, ?, ?)", comment.Grade, comment.Content, comment.Picture, comment.IdClient, comment.IdEvent)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -278,19 +278,12 @@ func PostComment(tokenAPI string) func(c *gin.Context) {
 			})
 			return
 		}
-		defer stmt.Close()
 
-		_, err = stmt.Exec(comment.Grade, comment.Content, comment.Picture, comment.IdClient, comment.IdEvent)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error":   true,
-				"message": "can't execute statement",
-			})
-			return
-		}
+		idComment, err := rows.LastInsertId()
 
 		c.JSON(200, gin.H{
 			"error":   false,
+			"id":      idComment,
 			"message": "comment added",
 		})
 	}

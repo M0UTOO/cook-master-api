@@ -349,7 +349,7 @@ func PostBill(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO BILLS (name, type, createdAt, Id_USERS) VALUES (?, ?, DEFAULT, ?)", bill.Name, bill.Type, bill.IdUser)
+		rows, err := db.Exec("INSERT INTO BILLS (name, type, createdAt, Id_USERS) VALUES (?, ?, DEFAULT, ?)", bill.Name, bill.Type, bill.IdUser)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -359,8 +359,11 @@ func PostBill(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		billid, err := rows.LastInsertId()
+
 		c.JSON(200, gin.H{
 			"error":   false,
+			"idbill":  billid,
 			"message": "bill added",
 		})
 	}

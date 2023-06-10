@@ -17,6 +17,7 @@ import (
 	"cook-master-api/bills"
 	"cook-master-api/token"
 	"cook-master-api/users"
+	"cook-master-api/languages"
 
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
@@ -164,6 +165,12 @@ func main() {
 	order.DELETE("/food/:idfood/:idorder", orders.DeleteFoodFromAnOrder(tokenAPI))  // WORKING
 	order.GET("/item/:id", orders.GetItemsByOrderID(tokenAPI))  // WORKING
 	order.GET("/food/:id", orders.GetFoodsByOrderID(tokenAPI))  // WORKING
+	language := r.Group("/language")
+	language.GET("/all", languages.GetLanguages(tokenAPI))      // WORKING
+	language.GET("/:id", languages.GetLanguageByID(tokenAPI))   // WORKING
+	language.POST("/", languages.PostLanguage(tokenAPI))        // WORKING
+	language.DELETE("/:id", languages.DeleteLanguage(tokenAPI)) // WORKING
+	language.PATCH("/:id", languages.UpdateLanguage(tokenAPI))  // WORKING
 	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
 	//conversation.POST("/", conversations.PostConversations(tokenAPI))
 	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))

@@ -22,6 +22,19 @@ type User struct {
 	IsCreatedAt string `json:"iscreatedat"`
 	LastSeen string `json:"lastseen"`
 	IsBlocked string `json:"isblocked"`
+	Language int `json:"language"`
+}
+
+type UserNoPassword struct {
+	Id int `json:"id"`
+	Email string `json:"email"`
+	FirstName string `json:"firstname"`
+	LastName string `json:"lastname"`
+	ProfilePicture string `json:"profilepicture"`
+	IsCreatedAt string `json:"iscreatedat"`
+	LastSeen string `json:"lastseen"`
+	IsBlocked string `json:"isblocked"`
+	Language int `json:"language"`
 }
 
 func GetUserByID(tokenAPI string) func(c *gin.Context) {
@@ -71,9 +84,9 @@ func GetUserByID(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		var user User
+		var user UserNoPassword
 
-		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked, &user.Language)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -130,6 +143,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			LastName string `json:"lastname"`
 			Country string `json:"country"`
 			Subscription int `json:"subscription"`
+			Language int `json:"language"`
 			Presentation string `json:"presentation"`
 			ContractStart string `json:"contractstart"`
 			ContractEnd string `json:"contractend"`
@@ -210,6 +224,25 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		if req.Language <= 0 {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong language id",
+			})
+			return
+		}
+
+		var idlanguage int
+
+		err = db.QueryRow("SELECT Id_LANGUAGES FROM LANGUAGES WHERE Id_LANGUAGES = '" + strconv.Itoa(req.Language) + "'").Scan(&idlanguage)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "wrong language id",
+			})
+			return
+		}
+
 		if typeOfUser[0] == "Client" {
 			if req.Country == "" || req.Subscription <= 0 {
 				c.JSON(400, gin.H{
@@ -285,7 +318,7 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 
 		}
 
-		result, err := db.Exec("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', DEFAULT, DEFAULT, DEFAULT, DEFAULT)")
+		result, err := db.Exec("INSERT INTO USERS VALUES(NULL, '" + req.Email + "', '" + req.Password + "', '" + req.FirstName + "', '" + req.LastName + "', DEFAULT, DEFAULT, DEFAULT, DEFAULT, '" + strconv.Itoa(req.Language) + "')")
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -344,12 +377,14 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 
 			c.JSON(200, gin.H{
 				"error": false,
+				"iduser": lastId,
+				"idclient": lastIdClient,
 				"message": "client created",
 			})
 			return
 
 		} else if typeOfUser[0] == "Manager" {
-			rows, err := db.Query("INSERT INTO MANAGERS VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(lastId, 10))
+			rows, err := db.Exec("INSERT INTO MANAGERS VALUES(NULL, ?, ?, ?, ?, ?)", req.IsItemManager, req.IsClientManager, req.IsContractorManager, req.IsSuperAdmin, strconv.FormatInt(lastId, 10))
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -366,16 +401,19 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				}
 				return
 			}
-			defer rows.Close()
+
+			lastIdManager, err := rows.LastInsertId()
 
 			c.JSON(200, gin.H{
 				"error": false,
+				"iduser": lastId,
+				"idmanager": lastIdManager,
 				"message": "manager created",
 			})
 			return
 
 		} else if typeOfUser[0] == "Contractor" {
-			rows, err := db.Query("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + strconv.Itoa(req.IdContractorType) + "', '" + strconv.FormatInt(lastId, 10) + "')")
+			rows, err := db.Exec("INSERT INTO CONTRACTORS VALUES(NULL, '" + req.Presentation + "', '" + req.ContractStart + "', '" + req.ContractEnd + "', '" + strconv.Itoa(req.IdContractorType) + "', '" + strconv.FormatInt(lastId, 10) + "')")
 			fmt.Println(err)
 			if err != nil {
 				c.JSON(500, gin.H{
@@ -393,10 +431,13 @@ func PostUser(tokenAPI string) func(c *gin.Context) {
 				}
 				return
 			}
-			defer rows.Close()
+
+			lastIdContractor, err := rows.LastInsertId()
 
 			c.JSON(200, gin.H{
 				"error": false,
+				"iduser": lastId,
+				"idcontractor": lastIdContractor,
 				"message": "contractor created",
 			})
 			return
@@ -583,6 +624,20 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, fmt.Sprintf("isblocked = '%s'", req.IsBlocked))
 		}
 
+		if req.Language != 0 {
+			var idlanguage int
+
+			err = db.QueryRow("SELECT Id_LANGUAGES FROM LANGUAGES WHERE Id_LANGUAGES = '" + strconv.Itoa(req.Language) + "'").Scan(&idlanguage)
+			if err != nil {
+				c.JSON(400, gin.H{
+					"error": true,
+					"message": "wrong language id",
+				})
+				return
+			}
+			setClause = append(setClause, fmt.Sprintf("id_languages = '%s'", strconv.Itoa(req.Language)))
+		}
+
 		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
 				"error": true,
@@ -593,7 +648,7 @@ func UpdateUser(tokenAPI string) func(c *gin.Context) {
 
 		var user User
 
-		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
+		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked, &user.Language)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -678,11 +733,11 @@ func GetUserByFilter(tokenAPI string) func(c *gin.Context) {
 		}
 		defer rows.Close()
 
-		var users []User
+		var users []UserNoPassword
 
 		for rows.Next() {
-			var user User
-			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
+			var user UserNoPassword
+			err = rows.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked, &user.Language)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -745,11 +800,11 @@ func GetUsers(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		var users []User
+		var users []UserNoPassword
 
 		for rows.Next() {
-			var user User
-			err = rows.Scan(&user.Id, &user.Email, &user.Password, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked)
+			var user UserNoPassword
+			err = rows.Scan(&user.Id, &user.Email, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked, &user.Language)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -831,7 +886,9 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		err = db.QueryRow("SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "'").Scan(&id)
+		var isblocked string
+
+		err = db.QueryRow("SELECT Id_USERS, isBlocked FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "'").Scan(&id, &isblocked)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -851,6 +908,7 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 				"role": "client",
 				"subscription": idSub,
 				"id": id,
+				"isblocked": isblocked,
 			})
 			return
 		}
@@ -861,6 +919,7 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 				"error": false,
 				"role": "manager",
 				"id": id,
+				"isblocked": isblocked,
 			})
 			return
 		}
@@ -871,6 +930,7 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 				"error": false,
 				"role": "contractor",
 				"id": id,
+				"isblocked": isblocked,
 			})
 			return
 		}

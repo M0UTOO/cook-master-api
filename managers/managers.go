@@ -19,9 +19,7 @@ type Manager struct {
 }
 
 type ManagerUser struct {
-	Id int `json:"id"`
 	Email string `json:"email"`
-	Password string `json:"password"`
 	FirstName string `json:"firstname"`
 	LastName string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
@@ -34,6 +32,7 @@ type ManagerUser struct {
 	IsContractorManager bool `json:"iscontractormanager"`
 	IsSuperAdmin bool `json:"issuperadmin"`
 	IdUsers int `json:"idusers"`
+	Language int `json:"language"`
 }
 
 func GetManagers(tokenAPI string) func(c *gin.Context) {
@@ -66,7 +65,7 @@ func GetManagers(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT * FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS ORDER BY USERS.lastname DESC")
+		rows, err := db.Query("SELECT USERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES, MANAGERS.Id_MANAGERS, MANAGERS.isItemManager, MANAGERS.isClientManager, MANAGERS.isContractorManager, MANAGERS.isSuperAdmin, MANAGERS.Id_USERS FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS ORDER BY USERS.lastname DESC")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -79,7 +78,7 @@ func GetManagers(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var manager ManagerUser
-			err = rows.Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture, &manager.IsCreatedAt, &manager.LastSeen, &manager.IsBlocked)
+			err = rows.Scan(&manager.Email, &manager.FirstName, &manager.LastName, &manager.ProfilePicture, &manager.IsCreatedAt, &manager.LastSeen, &manager.IsBlocked, &manager.Language, &manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -144,7 +143,7 @@ func GetManagerByID(tokenAPI string) func(c *gin.Context) {
 
 		var manager ManagerUser
 
-		err = db.QueryRow("SELECT * FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS WHERE MANAGERS.Id_USERS = " + id).Scan(&manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers, &manager.Id, &manager.Email, &manager.Password, &manager.FirstName, &manager.LastName, &manager.ProfilePicture, &manager.IsCreatedAt, &manager.LastSeen, &manager.IsBlocked)
+		err = db.QueryRow("SELECT USERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES, MANAGERS.Id_MANAGERS, MANAGERS.isItemManager, MANAGERS.isClientManager, MANAGERS.isContractorManager, MANAGERS.isSuperAdmin, MANAGERS.Id_USERS FROM MANAGERS JOIN USERS ON MANAGERS.Id_USERS = USERS.Id_USERS WHERE MANAGERS.Id_USERS = " + id).Scan(&manager.Email, &manager.FirstName, &manager.LastName, &manager.ProfilePicture, &manager.IsCreatedAt, &manager.LastSeen, &manager.IsBlocked, &manager.Language, &manager.IdManager, &manager.IsItemManager, &manager.IsClientManager, &manager.IsContractorManager, &manager.IsSuperAdmin, &manager.IdUsers)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,

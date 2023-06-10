@@ -422,6 +422,7 @@ func Postlesson(tokenAPI string) func(c *gin.Context) {
 
 		c.JSON(200, gin.H{
 			"error":   false,
+			"id":      lastId,
 			"message": "lesson inserted",
 		})
 	}

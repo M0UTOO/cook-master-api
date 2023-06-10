@@ -12,9 +12,7 @@ import (
 )
 
 type ClientUser struct {
-	Id int `json:"id"`
 	Email string `json:"email"`
-	Password string `json:"password"`
 	FirstName string `json:"firstname"`
 	LastName string `json:"lastname"`
 	ProfilePicture string `json:"profilepicture"`
@@ -31,6 +29,7 @@ type ClientUser struct {
 	Subscription int `json:"subscription"`
 	KeepSubscription bool `json:"keepsubscription"`
 	IdUsers int `json:"idusers"`
+	Language int `json:"language"`
 }
 
 type Client struct {
@@ -75,8 +74,9 @@ func GetClients(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS ORDER BY USERS.lastname DESC")
+		rows, err := db.Query("SELECT USERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES, CLIENTS.Id_CLIENTS, CLIENTS.fidelitypoints, CLIENTS.streetname, CLIENTS.country, CLIENTS.city, CLIENTS.streetnumber, CLIENTS.phonenumber, CLIENTS.subscription, CLIENTS.keepsubscription, CLIENTS.Id_USERS FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS ORDER BY USERS.lastname DESC")
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "user not found",
@@ -88,7 +88,7 @@ func GetClients(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var client ClientUser
-			err = rows.Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.KeepSubscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
+			err = rows.Scan(&client.Email, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked, &client.Language, &client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.KeepSubscription, &client.IdUsers)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -153,7 +153,7 @@ func GetClientByID(tokenAPI string) func(c *gin.Context) {
 
 		var client ClientUser
 
-		err = db.QueryRow("SELECT * FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.KeepSubscription, &client.IdUsers, &client.Id, &client.Email, &client.Password, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked)
+		err = db.QueryRow("SELECTUSERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES, CLIENTS.Id_CLIENTS, CLIENTS.fidelitypoints, CLIENTS.streetname, CLIENTS.country, CLIENTS.city, CLIENTS.streetnumber, CLIENTS.phonenumber, CLIENTS.subscription, CLIENTS.keepsubscription, CLIENTS.Id_USERS FROM CLIENTS JOIN USERS ON CLIENTS.Id_USERS = USERS.Id_USERS WHERE CLIENTS.Id_USERS = " + id).Scan(&client.Email, &client.FirstName, &client.LastName, &client.ProfilePicture, &client.IsCreatedAt, &client.LastSeen, &client.IsBlocked, &client.Language, &client.IdClient, &client.FidelityPoints, &client.StreetName, &client.Country, &client.City, &client.SteetNumber, &client.PhoneNumber, &client.Subscription, &client.KeepSubscription, &client.IdUsers)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

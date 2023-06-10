@@ -224,7 +224,7 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO ORDERS (status, price, deliveryaddress, Id_CONTRACTORS, Id_CONTRACTORS_1, Id_CLIENTS) VALUES (?, ?, DEFAULT, ?, ?, ?)", order.Status, order.Price, idcontractor1, idcontractor2, idclient)
+		rows, err := db.Exec("INSERT INTO ORDERS (status, price, deliveryaddress, Id_CONTRACTORS, Id_CONTRACTORS_1, Id_CLIENTS) VALUES (?, ?, DEFAULT, ?, ?, ?)", order.Status, order.Price, idcontractor1, idcontractor2, idclient)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -234,8 +234,11 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		id, err := rows.LastInsertId()
+
 		c.JSON(200, gin.H{
 			"error": false,
+			"id": id,
 			"message": "order created",
 		})
 	}

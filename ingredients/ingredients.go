@@ -335,7 +335,7 @@ func PostIngredient(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO INGREDIENTS (Name, Allergen, Id_COOKING_SPACES) VALUES (?, ?, ?)", ingredient.Name, ingredient.Allergen, ingredient.IdCookingSpace)
+		rows, err := db.Exec("INSERT INTO INGREDIENTS (Name, Allergen, Id_COOKING_SPACES) VALUES (?, ?, ?)", ingredient.Name, ingredient.Allergen, ingredient.IdCookingSpace)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -345,8 +345,11 @@ func PostIngredient(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		id, err := rows.LastInsertId()
+
 		c.JSON(200, gin.H{
 			"error": false,
+			"id": id,
 			"message": "ingredient inserted",
 		})
 	}

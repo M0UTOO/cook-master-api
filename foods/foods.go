@@ -217,7 +217,7 @@ func PostFood(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO FOODS (name, description, price, picture) VALUES (?, ?, ?, DEFAULT)", food.Name, food.Description, food.Price)
+		rows, err := db.Exec("INSERT INTO FOODS (name, description, price, picture) VALUES (?, ?, ?, DEFAULT)", food.Name, food.Description, food.Price)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -226,8 +226,11 @@ func PostFood(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		idfood, err := rows.LastInsertId()
+
 		c.JSON(200, gin.H{
 			"error":   false,
+			"id":      idfood,
 			"message": "food added",
 		})
 	}
