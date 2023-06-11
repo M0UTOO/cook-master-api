@@ -83,6 +83,7 @@ func main() {
 	event.PATCH("/host/:idevent/:idcookingspace", events.AddEventToAnCookingSpace(tokenAPI))     // WORKING
 	event.DELETE("/host/:idevent/:idcookingspace", events.DeleteEventToAnCookingSpace(tokenAPI)) // WORKING
 	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) // WORKING
+	event.GET("/formation/:iduser", events.GetAllFormationsByUserID(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING

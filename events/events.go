@@ -1865,10 +1865,185 @@ func ValidateClientPresence(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
+		var idgroup string
+
+		err = db.QueryRow("SELECT Id_EVENTS_GROUPS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idgroup)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "client not added to event",
+			})
+			return
+		}
+
+		if idgroup != "1" && idgroup != "0"{
+
+			var isformation int
+
+			err = db.QueryRow("SELECT Id_CLIENTS FROM FORMATIONS WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS_GROUPS = '" + idgroup + "'").Scan(&isformation)
+			if err != nil {
+				fmt.Println(err)
+				_, err = db.Exec("INSERT INTO FORMATIONS (Id_CLIENTS, Id_EVENTS_GROUPS, counter) VALUES ('" + idclient + "', '" + idgroup + "', DEFAULT)")
+				fmt.Println(err)
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "cannot add formations",
+					})
+					return
+				}
+
+			} else {
+				_, err = db.Exec("UPDATE FORMATIONS SET counter = counter + 1 WHERE Id_CLIENTS = '"+idclient+"' AND Id_EVENTS_GROUPS = '"+idgroup+"'")
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "cannot update formations",
+					})
+					return
+				}
+			}
+		}
+			
 		c.JSON(200, gin.H{
 			"error":   false,
 			"message": "client presence validated",
 		})
+	}
+}
+
+func GetAllFormationsByUserID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+
+			return
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+
+			return
+		}
+
+		iduser := c.Param("iduser")
+		if iduser == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id user can't be empty",
+			})
+
+			return
+		}
+
+		if !utils.IsSafeString(iduser) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id user can't contain sql injection",
+			})
+
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+
+			return
+		}
+		defer db.Close()
+
+		var idclient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + iduser + "'").Scan(&idclient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "client not found",
+			})
+
+			return
+		}
+
+		rows, err := db.Query("SELECT Id_EVENTS_GROUPS, counter FROM FORMATIONS WHERE Id_CLIENTS = '" + idclient + "'")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "formations not found",
+			})
+
+			return
+		}
+		defer rows.Close()
+
+		var formations []string
+
+		for rows.Next() {
+			var idgroup string
+			var counter int
+			err = rows.Scan(&idgroup, &counter)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot scan formations",
+				})
+
+				return
+			}
+
+			var name string
+
+			fmt.Println(idgroup)
+
+			err = db.QueryRow("SELECT Name FROM EVENTS_GROUPS WHERE Id_EVENTS_GROUPS = '" + idgroup + "'").Scan(&name)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "event not found",
+				})
+
+				return
+			}
+
+			rows, err := db.Query("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS_GROUPS = '" + idgroup + "'")
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "event not found",
+				})
+
+				return
+			}
+			defer rows.Close()
+
+			var counterEvents int
+
+			for rows.Next() {
+				counterEvents += 1
+			}
+
+			formations = append(formations, name + " : " + strconv.Itoa(counter) + "/" + strconv.Itoa(counterEvents))
+		}
+
+		c.JSON(200, formations)
 	}
 }
 
