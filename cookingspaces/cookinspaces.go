@@ -5,11 +5,17 @@ import (
 	"cook-master-api/utils"
 	"database/sql"
 	"fmt"
+	"time"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+)
+
+const (
+	BOOKSSTARTTIME = "07:00:00"
+	BOOKSENDTIME   = "20:00:00"
 )
 
 type CookingSpace struct {
@@ -22,6 +28,8 @@ type CookingSpace struct {
 }
 
 type Books struct {
+	IdUser	int `json:"iduser"`
+	IdCookingSpace int `json:"idCookingSpace"`
 	StartTime string `json:"starttime"`
 	EndTime   string `json:"endtime"`
 }
@@ -696,11 +704,55 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 			})
 			return
 		}
-
-		if books.EndTime == "" || !utils.IsSafeString(books.EndTime) {
+		
+		startTime, err := time.Parse("2006-01-02 15:04:05", books.StartTime)
+		if err != nil {
 			c.JSON(400, gin.H{
 				"error":   true,
-				"message": "endtime can't be empty or contain sql injection",
+				"message": "invalid StartTime format",
+			})
+			return
+		}
+
+		referenceTime, _ := time.Parse("2006-01-02 15:04:05", "2006-01-02 06:59:59")
+
+		startTimeOnly := startTime.Format("15:04:05")
+		referenceTimeOnly := referenceTime.Format("15:04:05")
+
+		if startTimeOnly <= referenceTimeOnly {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "StartTime should be after 7am",
+			})
+			return
+		}
+
+		endTime, err := time.Parse("2006-01-02 15:04:05", books.EndTime)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "invalid EndTime format",
+			})
+			return
+		}
+
+		referenceTime, _ = time.Parse("2006-01-02 15:04:05", "2006-01-02 20:00:01")
+
+		endTimeOnly := endTime.Format("15:04:05")
+		referenceTimeOnly = referenceTime.Format("15:04:05")
+
+		if endTimeOnly >= referenceTimeOnly {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "EndTime should be before 8pm",
+			})
+			return
+		}
+
+		if !startTime.Truncate(24*time.Hour).Equal(endTime.Truncate(24*time.Hour)) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "StartTime and EndTime must be on the same day",
 			})
 			return
 		}
@@ -714,6 +766,34 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 		defer db.Close()
+
+		var existingReservationID int
+		err = db.QueryRow("SELECT Id_BOOKS FROM BOOKS WHERE startTime <= ? AND endTime >= ?", endTime.Format("2006-01-02 15:04:05"), startTime.Format("2006-01-02 15:04:05")).Scan(&existingReservationID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				fmt.Println("reservation time range is available")
+			} else {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "failed to query existing reservations",
+				})
+				return
+			}
+		} else {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "reservation time range is not available",
+			})
+			return
+		}
+
+		if books.EndTime == "" || !utils.IsSafeString(books.EndTime) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "endtime can't be empty or contain sql injection",
+			})
+			return
+		}
 
 		var idclient string
 
@@ -733,17 +813,6 @@ func AddABooks(tokenAPI string) func(c *gin.Context) {
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "cookingspace not found",
-			})
-			return
-		}
-
-		var idbooks string
-
-		err = db.QueryRow("SELECT Id_CLIENTS FROM BOOKS WHERE Id_COOKING_SPACES = '" + idcookingspace + "' AND Id_CLIENTS = '" + idclient + "'").Scan(&idbooks)
-		if err == nil {
-			c.JSON(400, gin.H{
-				"error":   true,
-				"message": "books already added",
 			})
 			return
 		}
@@ -986,5 +1055,126 @@ func DeleteCookingSpace(tokenAPI string) func(c *gin.Context) {
 			"error":   false,
 			"message": "cookingspace deleted",
 		})
+	}
+}
+
+func GetBooksByCookingSpaceID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id is not safe",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to database",
+			})
+			return
+		}
+		defer db.Close()
+		rows, err := db.Query("SELECT BOOKS.startTime, BOOKS.endTime, BOOKS.Id_COOKING_SPACES, CLIENTS.Id_USERS FROM BOOKS JOIN CLIENTS ON CLIENTS.Id_CLIENTS = BOOKS.Id_CLIENTS WHERE BOOKS.Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get books",
+			})
+			return
+		}
+		defer rows.Close()
+		var books []Books
+		for rows.Next() {
+			var book Books
+			err = rows.Scan(&book.StartTime, &book.EndTime, &book.IdCookingSpace, &book.IdUser)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot get books",
+				})
+				return
+			}
+			books = append(books, book)
+		}
+		c.JSON(200, books)
+	}
+}
+
+func GetCookingSpacesBooks(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to database",
+			})
+			return
+		}
+		defer db.Close()
+		rows, err := db.Query("SELECT BOOKS.startTime, BOOKS.endTime, BOOKS.Id_COOKING_SPACES, CLIENTS.Id_USERS FROM BOOKS JOIN CLIENTS ON CLIENTS.Id_CLIENTS = BOOKS.Id_CLIENTS")
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get books",
+			})
+			return
+		}
+		defer rows.Close()
+		var books []Books
+		for rows.Next() {
+			var book Books
+			err = rows.Scan(&book.StartTime, &book.EndTime, &book.IdCookingSpace, &book.IdUser)
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot get books",
+				})
+				return
+			}
+			books = append(books, book)
+		}
+		c.JSON(200, books)
 	}
 }

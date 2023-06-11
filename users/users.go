@@ -86,8 +86,9 @@ func GetUserByID(tokenAPI string) func(c *gin.Context) {
 
 		var user UserNoPassword
 
-		err = db.QueryRow("SELECT * FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked, &user.Language)
+		err = db.QueryRow("SELECT USERS.Id_USERS, USERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES FROM USERS WHERE Id_USERS=" + id).Scan(&user.Id, &user.Email, &user.FirstName, &user.LastName, &user.ProfilePicture, &user.IsCreatedAt, &user.LastSeen, &user.IsBlocked, &user.Language)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "user not found",
@@ -721,7 +722,7 @@ func GetUserByFilter(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 		
-		query := fmt.Sprintf("SELECT * FROM USERS WHERE lastname LIKE '%%%s%%' OR firstname LIKE '%%%s%%' OR email LIKE '%%%s%%'", filter, filter, filter)
+		query := fmt.Sprintf("SELECT USERS.Id_USERS, USERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES FROM USERS WHERE lastname LIKE '%%%s%%' OR firstname LIKE '%%%s%%' OR email LIKE '%%%s%%'", filter, filter, filter)
 
 		rows, err := db.Query(query)
 		if err != nil {
@@ -791,7 +792,7 @@ func GetUsers(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT * FROM USERS ORDER BY lastname")
+		rows, err := db.Query("SELECT USERS.Id_USERS, USERS.email, USERS.firstname, USERS.lastname, USERS.profilepicture, USERS.iscreatedat, USERS.lastseen, USERS.isblocked, USERS.Id_LANGUAGES FROM USERS ORDER BY lastname")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
