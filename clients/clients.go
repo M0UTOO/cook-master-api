@@ -646,3 +646,69 @@ func UnWatchLesson(tokenAPI string) func(c *gin.Context) {
 		})
 	}
 }
+
+func GetAllSubscription(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type SubscriptionCount struct {
+			Subscription string `json:"subscription"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT SUBSCRIPTIONS.name AS name, COUNT(*) AS count FROM CLIENTS JOIN SUBSCRIPTIONS ON CLIENTS.subscription = SUBSCRIPTIONS.Id_SUBSCRIPTIONS GROUP BY subscription")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "subscription not found",
+			})
+			return
+		}
+
+		var subscriptions []SubscriptionCount
+
+		for rows.Next() {
+			var subscription SubscriptionCount
+			err = rows.Scan(&subscription.Subscription, &subscription.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "subscription not found",
+				})
+				return
+			}
+			subscriptions = append(subscriptions, subscription)
+		}
+
+		c.JSON(200, subscriptions)
+		return
+	}
+}

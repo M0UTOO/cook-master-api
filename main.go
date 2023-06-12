@@ -44,7 +44,8 @@ func main() {
 	client.PATCH("/:id", clients.UpdateClient(tokenAPI))            // WORKING                          
 	client.PATCH("/subscription/:iduser/:idsubscription", clients.UpdateClientSubscription(tokenAPI))   // WORKING
 	client.PATCH("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI))  							// WORKING                           
-	client.DELETE("/watch/:idclient/:idlesson", clients.UnWatchLesson(tokenAPI))     					// WORKING               
+	client.DELETE("/watch/:idclient/:idlesson", clients.UnWatchLesson(tokenAPI))     					// WORKING     
+	client.GET("/subscription", clients.GetAllSubscription(tokenAPI)) // WORKING          
 	contractor := r.Group("/contractor")
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))    			// WORKING 
 	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  			// WORKING

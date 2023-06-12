@@ -202,6 +202,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 
 		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "cannot get event",
@@ -262,6 +263,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		rows, err := db.Query("SELECT * FROM EVENTS WHERE Id_EVENTS_GROUPS = ?", id)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "cannot get events",
@@ -276,6 +278,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 			var event Event
 			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error":   true,
 					"message": "cannot get events",

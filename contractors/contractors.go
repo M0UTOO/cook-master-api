@@ -30,7 +30,7 @@ type ContractorUser struct {
 	Presentation   string `json:"presentation"`
 	ContractStart  string `json:"contractstart"`
 	ContractEnd    string `json:"contractend"`
-	ContractorType           string `json:"contractortype"`
+	ContractorType           int `json:"contractortype"`
 	IdUsers        int    `json:"idusers"`
 	Language 	 int `json:"language"`
 }
