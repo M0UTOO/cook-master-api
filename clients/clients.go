@@ -712,3 +712,201 @@ func GetAllSubscription(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetAverageClientParticipationByMonth(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Participation struct {
+			Month string `json:"month"`
+			Count float64    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT DATE_FORMAT(endTime, '%Y-%m') AS month, AVG(CAST(isPresent AS INT)) AS average_participation FROM EVENTS JOIN PARTICIPATES ON EVENTS.Id_EVENTS = PARTICIPATES.Id_EVENTS GROUP BY month ORDER BY month")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "subscription not found",
+			})
+			return
+		}
+
+		var participations []Participation
+
+		for rows.Next() {
+			var participation Participation
+			err = rows.Scan(&participation.Month, &participation.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "subscription not found",
+				})
+				return
+			}
+			participations = append(participations, participation)
+		}
+
+		c.JSON(200, participations)
+		return
+	}
+}
+
+func GetAverageMoneySpentByClient(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Participation struct {
+			Month string `json:"month"`
+			Count float64    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT COALESCE(DATE_FORMAT(createdAt, '%Y-%m'), '2023-07') AS month, COALESCE(AVG(total_price), 0) AS average_money_spent FROM (SELECT c.Id_CLIENTS, o.createdAt, SUM(o.price) + COALESCE(SUM(sub.price), 0) + COALESCE(SUM(cs.PricePerHour), 0) AS total_price FROM CLIENTS c LEFT JOIN ORDERS o ON c.Id_CLIENTS = o.Id_CLIENTS LEFT JOIN BOOKS b ON c.Id_CLIENTS = b.Id_CLIENTS LEFT JOIN IS_SUBSCRIBED s ON c.Id_CLIENTS = s.Id_CLIENTS LEFT JOIN SUBSCRIPTIONS sub ON s.Id_SUBSCRIPTIONS = sub.Id_SUBSCRIPTIONS LEFT JOIN COOKING_SPACES cs ON b.Id_COOKING_SPACES = cs.Id_COOKING_SPACES WHERE c.keepSubscription = TRUE GROUP BY c.Id_CLIENTS, o.createdAt ) AS t GROUP BY month ORDER BY month")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "subscription not found",
+			})
+			return
+		}
+
+		var participations []Participation
+
+		for rows.Next() {
+			var participation Participation
+			err = rows.Scan(&participation.Month, &participation.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "subscription not found",
+				})
+				return
+			}
+			participations = append(participations, participation)
+		}
+
+		c.JSON(200, participations)
+		return
+	}
+}
+
+func GetClientsByCountry(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Participation struct {
+			Country string `json:"country"`
+			Count float64    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT country, COUNT(*) AS client_count FROM CLIENTS GROUP BY country ORDER BY client_count DESC;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "subscription not found",
+			})
+			return
+		}
+
+		var participations []Participation
+
+		for rows.Next() {
+			var participation Participation
+			err = rows.Scan(&participation.Country, &participation.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "subscription not found",
+				})
+				return
+			}
+			participations = append(participations, participation)
+		}
+
+		c.JSON(200, participations)
+		return
+	}
+}

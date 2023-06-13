@@ -16,6 +16,7 @@ type Order struct {
 	IdOrder     int     `json:"idorder"`
 	Status	  string  `json:"status"`
 	Price 	 float64 `json:"price"`
+	CreatedAt  string  `json:"createdat"`
 	DeliveryAddress string `json:"deliveryaddress"`
 	IdContractor1 int `json:"idcontractor1"`
 	IdContractor2 int `json:"idcontractor2"`
@@ -64,7 +65,7 @@ func GetOrders(tokenAPI string) func(c *gin.Context) {
 		var orders []Order
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.CreatedAt, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -121,7 +122,7 @@ func GetOrder(tokenAPI string) func(c *gin.Context) {
 		row := db.QueryRow("SELECT * FROM ORDERS WHERE Id_ORDERS = ?", id)
 
 		var order Order
-		err = row.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
+		err = row.Scan(&order.IdOrder, &order.Status, &order.Price, &order.CreatedAt, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -224,7 +225,7 @@ func PostOrder(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		rows, err := db.Exec("INSERT INTO ORDERS (status, price, deliveryaddress, Id_CONTRACTORS, Id_CONTRACTORS_1, Id_CLIENTS) VALUES (?, ?, DEFAULT, ?, ?, ?)", order.Status, order.Price, idcontractor1, idcontractor2, idclient)
+		rows, err := db.Exec("INSERT INTO ORDERS (status, price, createdAt, deliveryaddress, Id_CONTRACTORS, Id_CONTRACTORS_1, Id_CLIENTS) VALUES (?, ?, DEFAULT, DEFAULT, ?, ?, ?)", order.Status, order.Price, idcontractor1, idcontractor2, idclient)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -521,7 +522,7 @@ func GetOrderByContractor1ID(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.CreatedAt, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -583,7 +584,7 @@ func GetOrderByContractor2ID(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.CreatedAt, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -645,7 +646,7 @@ func GetOrderByStatus(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.CreatedAt, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -707,7 +708,7 @@ func GetOrderByClientID(tokenAPI string) func(c *gin.Context) {
 		defer rows.Close()
 		for rows.Next() {
 			var order Order
-			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
+			err := rows.Scan(&order.IdOrder, &order.Status, &order.Price, &order.CreatedAt, &order.DeliveryAddress, &order.IdContractor1, &order.IdContractor2, &order.IdClient)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,

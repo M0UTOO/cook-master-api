@@ -46,6 +46,9 @@ func main() {
 	client.PATCH("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI))  							// WORKING                           
 	client.DELETE("/watch/:idclient/:idlesson", clients.UnWatchLesson(tokenAPI))     					// WORKING     
 	client.GET("/subscription", clients.GetAllSubscription(tokenAPI)) // WORKING          
+	client.GET("/participation", clients.GetAverageClientParticipationByMonth(tokenAPI)) // WORKING
+	client.GET("/money", clients.GetAverageMoneySpentByClient(tokenAPI)) // WORKING")
+	client.GET("/country", clients.GetClientsByCountry(tokenAPI)) // WORKING
 	contractor := r.Group("/contractor")
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))    			// WORKING 
 	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  			// WORKING
@@ -85,6 +88,7 @@ func main() {
 	event.DELETE("/host/:idevent/:idcookingspace", events.DeleteEventToAnCookingSpace(tokenAPI)) // WORKING
 	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) // WORKING
 	event.GET("/formation/:iduser", events.GetAllFormationsByUserID(tokenAPI)) // WORKING
+	event.GET("/month", events.GetEventsByMonth(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING

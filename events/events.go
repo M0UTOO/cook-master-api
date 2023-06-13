@@ -2277,3 +2277,81 @@ func DeleteEventToAnCookingSpace(tokenAPI string) func(c *gin.Context) {
 		})
 	}
 }
+
+func GetEventsByMonth(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type EventReq struct {
+			Month  string `json:"month"`
+			Counter int `json:"counter"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+
+			return
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT DATE_FORMAT(endTime, '%m/%Y') AS month, COUNT(Id_EVENTS) AS counter FROM EVENTS GROUP BY DATE_FORMAT(endTime, '%m/%Y') ORDER BY endTime")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "events not found",
+			})
+
+			return
+		}
+		defer rows.Close()
+
+		var events []EventReq
+
+		for rows.Next() {
+			var event EventReq
+			err = rows.Scan(&event.Month, &event.Counter)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot scan events",
+				})
+
+				return
+			}
+
+			events = append(events, event)
+		}
+
+		c.JSON(200, events)
+	}
+}
+
+		
+
