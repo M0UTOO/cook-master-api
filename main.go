@@ -37,7 +37,7 @@ func main() {
 	user.POST("/", users.PostUser(tokenAPI))                     // WORKING
 	user.POST("/login", users.LoginUser(tokenAPI)) 				 // WORKING
 	user.DELETE("/:id", users.DeleteUser(tokenAPI))              // WORKING
-	user.GET("/password", users.GetPasswordByEmail(tokenAPI)) // WORKING
+	user.POST("/password", users.GetPasswordByEmail(tokenAPI)) // WORKING
 	client := r.Group("/client")
 	client.GET("/all", clients.GetClients(tokenAPI))       			// WORKING                                             
 	client.GET("/:id", clients.GetClientByID(tokenAPI))             // WORKING                                    
