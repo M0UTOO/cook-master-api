@@ -1160,3 +1160,203 @@ func GetFoodsByOrderID(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, foods)
 	}
 }
+
+func GetOrdersByMonth(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type OrderMonth struct {
+			Month string `json:"month"`
+			Count int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT DATE_FORMAT(createdAt, '%Y-%m') AS month, COUNT(*) AS eventCount FROM ORDERS GROUP BY DATE_FORMAT(createdAt, '%Y-%m') ORDER BY month ASC;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "premises not found",
+			})
+			return
+		}
+
+		var ordermonths []OrderMonth
+
+		for rows.Next() {
+			var ordermonth OrderMonth
+			err = rows.Scan(&ordermonth.Month, &ordermonth.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "books not found",
+				})
+				return
+			}
+			ordermonths = append(ordermonths, ordermonth)
+		}
+
+		c.JSON(200, ordermonths)
+		return
+	}
+}
+
+func GetTop5Items(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Top5Item struct {
+			IdItem int `json:"iditem"`
+			Name string `json:"name"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT si.Id_SHOP_ITEMS, si.name AS shopItem, COUNT(*) AS orderCount FROM SHOP_ITEMS si JOIN CONTAINS_ITEM ci ON si.Id_SHOP_ITEMS = ci.Id_SHOP_ITEMS GROUP BY si.Id_SHOP_ITEMS ORDER BY orderCount DESC LIMIT 5;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var top5items []Top5Item
+
+		for rows.Next() {
+			var top5item Top5Item
+			err = rows.Scan(&top5item.IdItem, &top5item.Name, &top5item.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "top 5 not found",
+				})
+				return
+			}
+			top5items = append(top5items, top5item)
+		}
+
+		c.JSON(200, top5items)
+		return
+	}
+}
+
+func GetTop5Food(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Top5Food struct {
+			IdFood int `json:"idfood"`
+			Name string `json:"name"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT f.Id_FOODS, f.name AS food, COUNT(*) AS orderCount FROM FOODS f JOIN CONTAINS_FOOD cf ON f.Id_FOODS = cf.Id_FOODS GROUP BY f.Id_FOODS ORDER BY orderCount DESC LIMIT 5;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var top5foods []Top5Food
+
+		for rows.Next() {
+			var top5food Top5Food
+			err = rows.Scan(&top5food.IdFood, &top5food.Name, &top5food.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "top 5 not found",
+				})
+				return
+			}
+			top5foods = append(top5foods, top5food)
+		}
+
+		c.JSON(200, top5foods)
+		return
+	}
+}

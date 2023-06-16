@@ -910,3 +910,70 @@ func GetClientsByCountry(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetTop5Client(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Top5Client struct {
+			IdClient int `json:"idclient"`
+			Name string `json:"name"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT c.Id_CLIENTS, u.firstname, COUNT(*) AS participationCount FROM CLIENTS c LEFT JOIN PARTICIPATES p ON c.Id_CLIENTS = p.Id_CLIENTS LEFT JOIN USERS u ON c.Id_USERS = u.Id_USERS LEFT JOIN COMMENTS cm ON c.Id_CLIENTS = cm.Id_CLIENTS LEFT JOIN IS_SUBSCRIBED s ON c.Id_CLIENTS = s.Id_CLIENTS LEFT JOIN ORDERS o ON c.Id_CLIENTS = o.Id_CLIENTS LEFT JOIN FORMATIONS f ON c.Id_CLIENTS = f.Id_CLIENTS LEFT JOIN BOOKS b ON c.Id_CLIENTS = b.Id_CLIENTS GROUP BY c.Id_CLIENTS ORDER BY participationCount DESC LIMIT 30;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "client not found",
+			})
+			return
+		}
+
+		var top5clients []Top5Client
+
+		for rows.Next() {
+			var top5client Top5Client
+			err = rows.Scan(&top5client.IdClient, &top5client.Name, &top5client.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "top 5 not found",
+				})
+				return
+			}
+			top5clients = append(top5clients, top5client)
+		}
+
+		c.JSON(200, top5clients)
+		return
+	}
+}

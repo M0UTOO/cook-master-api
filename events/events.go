@@ -2353,5 +2353,336 @@ func GetEventsByMonth(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
-		
+func GetEventsByType(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type EventType struct {
+			Type string `json:"type"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT EVENTS.type AS name, COUNT(*) AS count FROM EVENTS GROUP BY EVENTS.type")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "types not found",
+			})
+			return
+		}
+
+		var eventtypes []EventType
+
+		for rows.Next() {
+			var eventtype EventType
+			err = rows.Scan(&eventtype.Type, &eventtype.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "type not found",
+				})
+				return
+			}
+			eventtypes = append(eventtypes, eventtype)
+		}
+
+		c.JSON(200, eventtypes)
+		return
+	}
+}
+
+func GetEventsByDayOfTheWeek(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type EventWeek struct {
+			WeekDay string `json:"weekday"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT DAYNAME(endTime) AS dayOfWeek, COUNT(*) AS eventCount FROM EVENTS WHERE endTime IS NOT NULL GROUP BY dayOfWeek ORDER BY FIELD(dayOfWeek, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "days not found",
+			})
+			return
+		}
+
+		var eventweeks []EventWeek
+
+		for rows.Next() {
+			var eventweek EventWeek
+			err = rows.Scan(&eventweek.WeekDay, &eventweek.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "type not found",
+				})
+				return
+			}
+			eventweeks = append(eventweeks, eventweek)
+		}
+
+		c.JSON(200, eventweeks)
+		return
+	}
+}
+
+func GetEventsByMonthInAYear(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type EventMonth struct {
+			Month string `json:"month"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT DATE_FORMAT(endTime, '%M') AS month, COUNT(*) AS eventCount FROM EVENTS WHERE endTime IS NOT NULL GROUP BY month ORDER BY FIELD(month, 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var eventmonths []EventMonth
+
+		for rows.Next() {
+			var eventmonth EventMonth
+			err = rows.Scan(&eventmonth.Month, &eventmonth.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "type not found",
+				})
+				return
+			}
+			eventmonths = append(eventmonths, eventmonth)
+		}
+
+		c.JSON(200, eventmonths)
+		return
+	}
+}
+
+func GetTop5Events(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Top5Event struct {
+			IdEvent int `json:"idevent"`
+			Name string `json:"name"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT e.Id_EVENTS, e.name, COUNT(*) AS participationCount FROM EVENTS e JOIN PARTICIPATES p ON e.Id_EVENTS = p.Id_EVENTS WHERE p.isPresent = TRUE GROUP BY e.Id_EVENTS, e.name ORDER BY participationCount DESC LIMIT 5;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var top5events []Top5Event
+
+		for rows.Next() {
+			var top5event Top5Event
+			err = rows.Scan(&top5event.IdEvent, &top5event.Name, &top5event.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "top 5 not found",
+				})
+				return
+			}
+			top5events = append(top5events, top5event)
+		}
+
+		c.JSON(200, top5events)
+		return
+	}
+}
+
+func GetFormationsDone(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Formation struct {
+			Name string `json:"name"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT EG.name AS eventGroup, COUNT(F.Id_CLIENTS) AS formationCount FROM EVENTS_GROUPS EG LEFT JOIN FORMATIONS F ON EG.Id_EVENTS_GROUPS = F.Id_EVENTS_GROUPS LEFT JOIN EVENTS E ON EG.Id_EVENTS_GROUPS = E.Id_EVENTS_GROUPS GROUP BY EG.Id_EVENTS_GROUPS, EG.name HAVING COUNT(F.Id_CLIENTS) = COUNT(E.Id_EVENTS) ORDER BY EG.name;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var formations []Formation
+
+		for rows.Next() {
+			var formation Formation
+			err = rows.Scan(&formation.Name, &formation.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "formation not found",
+				})
+				return
+			}
+			formations = append(formations, formation)
+		}
+
+		c.JSON(200, formations)
+		return
+	}
+}
+
+
 

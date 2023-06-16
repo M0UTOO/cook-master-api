@@ -49,6 +49,7 @@ func main() {
 	client.GET("/participation", clients.GetAverageClientParticipationByMonth(tokenAPI)) // WORKING
 	client.GET("/money", clients.GetAverageMoneySpentByClient(tokenAPI)) // WORKING")
 	client.GET("/country", clients.GetClientsByCountry(tokenAPI)) // WORKING
+	client.GET("/top5", clients.GetTop5Client(tokenAPI)) // WORKING
 	contractor := r.Group("/contractor")
 	contractor.GET("/all", contractors.GetContractors(tokenAPI))    			// WORKING 
 	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  			// WORKING
@@ -89,12 +90,18 @@ func main() {
 	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) // WORKING
 	event.GET("/formation/:iduser", events.GetAllFormationsByUserID(tokenAPI)) // WORKING
 	event.GET("/month", events.GetEventsByMonth(tokenAPI)) // WORKING
+	event.GET("/months", events.GetEventsByMonthInAYear(tokenAPI)) // WORKING
+	event.GET("/type", events.GetEventsByType(tokenAPI)) // WORKING
+	event.GET("/week", events.GetEventsByDayOfTheWeek(tokenAPI)) // WORKING
+	event.GET("/top5", events.GetTop5Events(tokenAPI)) // WORKING
+	event.GET("/formation", events.GetFormationsDone(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING
 	premise.POST("/", premises.PostPremise(tokenAPI))        // WORKING
 	premise.DELETE("/:id", premises.DeletePremise(tokenAPI)) // WORKING
 	premise.PATCH("/:id", premises.UpdatePremise(tokenAPI))  // WORKING
+	premise.GET("/books", premises.GetBooksByPremises(tokenAPI)) // WORKING
 	cookingSpace := r.Group("/cookingspace")
 	cookingSpace.GET("/all", cookingspaces.GetCookingSpaces(tokenAPI))           // WORKING                 
 	cookingSpace.GET("/:id", cookingspaces.GetCookingSpaceByID(tokenAPI))      // WORKING                   
@@ -108,6 +115,7 @@ func main() {
 	cookingSpace.GET("/books/:id", cookingspaces.GetBooksByCookingSpaceID(tokenAPI)) // WORKING
 	cookingSpace.GET("/books/all", cookingspaces.GetCookingSpacesBooks(tokenAPI)) // WORKING")
 	cookingSpace.DELETE("/:id", cookingspaces.DeleteCookingSpace(tokenAPI)) // WORKING
+	cookingSpace.GET("/top5", cookingspaces.GetTop5CookingSpaces(tokenAPI)) // WORKING")
 	cookingItem := r.Group("/cookingitem")
 	cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI))       // WORKING                       
 	cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI))   // WORKING                        
@@ -133,6 +141,7 @@ func main() {
 	lesson.DELETE("/:id", lessons.DeleteLesson(tokenAPI)) // WORKING
 	lesson.GET("/group/all", lessons.GetGroupLessons(tokenAPI)) // WORKING
 	lesson.GET("/user/:id", lessons.GetUserIdByLessonId(tokenAPI)) // WORKING
+	lesson.GET("/difficulty", lessons.GetLessonsWatchedByDifficulty(tokenAPI)) // WORKING
 	food := r.Group("/food")
 	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
 	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING
@@ -174,6 +183,9 @@ func main() {
 	order.DELETE("/food/:idfood/:idorder", orders.DeleteFoodFromAnOrder(tokenAPI))  // WORKING
 	order.GET("/item/:id", orders.GetItemsByOrderID(tokenAPI))  // WORKING
 	order.GET("/food/:id", orders.GetFoodsByOrderID(tokenAPI))  // WORKING
+	order.GET("/month", orders.GetOrdersByMonth(tokenAPI))  // WORKING
+	order.GET("/top5item", orders.GetTop5Items(tokenAPI))  // WORKING
+	order.GET("/top5food", orders.GetTop5Food(tokenAPI))  // WORKING
 	language := r.Group("/language")
 	language.GET("/all", languages.GetLanguages(tokenAPI))      // WORKING
 	language.GET("/:id", languages.GetLanguageByID(tokenAPI))   // WORKING

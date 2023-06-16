@@ -1178,3 +1178,70 @@ func GetCookingSpacesBooks(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, books)
 	}
 }
+
+func GetTop5CookingSpaces(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Top5Event struct {
+			IdCookingSpace int `json:"idcookingspace"`
+			Name string `json:"name"`
+			Count        int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT cs.Id_COOKING_SPACES, cs.name AS cookingSpace, COUNT(b.Id_BOOKS) AS bookCount FROM COOKING_SPACES cs INNER JOIN BOOKS b ON b.Id_COOKING_SPACES = cs.Id_COOKING_SPACES GROUP BY cs.name ORDER BY bookCount DESC LIMIT 5;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var top5events []Top5Event
+
+		for rows.Next() {
+			var top5event Top5Event
+			err = rows.Scan(&top5event.IdCookingSpace, &top5event.Name, &top5event.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "top 5 not found",
+				})
+				return
+			}
+			top5events = append(top5events, top5event)
+		}
+
+		c.JSON(200, top5events)
+		return
+	}
+}

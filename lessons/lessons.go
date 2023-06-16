@@ -919,3 +919,69 @@ func GetUserIdByLessonId(tokenAPI string) func(c *gin.Context) {
 		})
 	}
 }
+
+func GetLessonsWatchedByDifficulty(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type CountDifficulty struct {
+			Difficulty string `json:"difficulty"`
+			Count float64    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT difficulty, COUNT(*) AS lesson_count FROM LESSONS GROUP BY difficulty ORDER BY difficulty ASC;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "lessons not found",
+			})
+			return
+		}
+
+		var countdifficulties []CountDifficulty
+
+		for rows.Next() {
+			var countdifficulty CountDifficulty
+			err = rows.Scan(&countdifficulty.Difficulty, &countdifficulty.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "subscription not found",
+				})
+				return
+			}
+			countdifficulties = append(countdifficulties, countdifficulty)
+		}
+
+		c.JSON(200, countdifficulties)
+		return
+	}
+}

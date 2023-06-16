@@ -491,3 +491,68 @@ func UpdatePremise(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
+func GetBooksByPremises(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type BooksCount struct {
+			Name string `json:"name"`
+			Count int    `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT p.name AS premises_name, COUNT(b.Id_BOOKS) AS book_count FROM BOOKS b JOIN COOKING_SPACES cs ON b.Id_COOKING_SPACES = cs.Id_COOKING_SPACES JOIN PREMISES p ON cs.Id_PREMISES = p.Id_PREMISES GROUP BY p.Id_PREMISES, p.name ORDER BY p.Id_PREMISES ASC;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "premises not found",
+			})
+			return
+		}
+
+		var bookscounts []BooksCount
+
+		for rows.Next() {
+			var bookcount BooksCount
+			err = rows.Scan(&bookcount.Name, &bookcount.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "books not found",
+				})
+				return
+			}
+			bookscounts = append(bookscounts, bookcount)
+		}
+
+		c.JSON(200, bookscounts)
+		return
+	}
+}
