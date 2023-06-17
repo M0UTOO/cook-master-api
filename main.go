@@ -21,12 +21,12 @@ import (
 
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
-
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	tokenAPI := token.GetAPIToken()
+	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/", index)
 	user := r.Group("/user")
