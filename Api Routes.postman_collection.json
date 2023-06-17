@@ -101,7 +101,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Starter Kitv5\",\n    \"price\": 10.50,\n    \"maxlessonaccess\": 5,\n    \"picture\": \"masuperphoto.png\",\n    \"description\": \"i'm a subscription\"\n}",
+							"raw": "{\n    \"name\": \"Starter Kitv5\",\n    \"price\": 10.50,\n    \"maxlessonaccess\": 5,\n    \"picture\": \"masuperphoto.png\",\n    \"description\": \"im a subscription\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -183,6 +183,182 @@
 			]
 		},
 		{
+			"name": "Languages",
+			"item": [
+				{
+					"name": "Get All Languages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Client",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/language/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"language",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update A Language",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Client",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Finnish\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9000/language/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"language",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Language",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Client",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"French\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9000/language",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"language"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete A Language",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Client",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/language/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"language",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Language By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/language/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"language",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Users",
 			"item": [
 				{
@@ -197,7 +373,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9000/user/1",
+							"raw": "http://localhost:9000/user/6",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -205,7 +381,7 @@
 							"port": "9000",
 							"path": [
 								"user",
-								"1"
+								"6"
 							]
 						}
 					},
@@ -329,6 +505,44 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Password By Email",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"gi@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9000/user/password",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"user",
+								"password"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -353,7 +567,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"zesd@gmail.com\",\n    \"password\": \"Respons11\",\n    \"lastname\": \"RUTH\",\n    \"firstname\": \"Nino\",\n    \"profilepicture\": \"magigaphoto.png\",\n    \"fidelitypoints\": 0,\n    \"streetname\": \"Rue de la street\",\n    \"country\": \"Russia\",\n    \"city\": \"Marocco\",\n    \"streetnumber\": 89,\n    \"phonenumber\": \"4353632312\",\n    \"subscription\": 1\n}",
+							"raw": "{\n    \"email\": \"milo@gmail.com\",\n    \"password\": \"Respons11\",\n    \"lastname\": \"RUTH\",\n    \"firstname\": \"Nino\",\n    \"profilepicture\": \"magigaphoto.png\",\n    \"fidelitypoints\": 0,\n    \"streetname\": \"Rue de la street\",\n    \"country\": \"Russia\",\n    \"city\": \"Marocco\",\n    \"streetnumber\": \"89\",\n    \"phonenumber\": \"4353632312\",\n    \"subscription\": 1,\n    \"language\" : 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -511,7 +725,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9000/client/subscription/1/3",
+							"raw": "http://localhost:9000/client/subscription/5/7",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -520,8 +734,8 @@
 							"path": [
 								"client",
 								"subscription",
-								"1",
-								"3"
+								"5",
+								"7"
 							]
 						}
 					},
@@ -582,6 +796,136 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get All Clients Subscriptions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/client/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"client",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Client Average Participation By Month",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/client/participation",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"client",
+								"participation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Client Average Money Spent By Month",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/client/money",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"client",
+								"money"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Client By Country",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/client/country",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"client",
+								"country"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Top 5 Client",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/client/top5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"client",
+								"top5"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -606,7 +950,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"ty@gmail.com\",\n    \"password\": \"Respons11\",\n    \"lastname\": \"RUTH\",\n    \"firstname\": \"Nino\",\n    \"profilepicture\": \"magigaphoto.png\",\n    \"presentation\": \"im a presentation\",\n    \"contractstart\": \"2023-01-01 15:15:15\",\n    \"contractend\": \"2024-01-01 15:15:15\",\n    \"idcontractortype\" : 1\n}",
+							"raw": "{\n    \"email\": \"eazf@gmail.com\",\n    \"password\": \"Respons11\",\n    \"lastname\": \"RUTH\",\n    \"firstname\": \"Nino\",\n    \"profilepicture\": \"magigaphoto.png\",\n    \"presentation\": \"im a presentation\",\n    \"contractstart\": \"2023-01-01 15:15:15\",\n    \"contractend\": \"2024-01-01 15:15:15\",\n    \"idcontractortype\" : 1,\n    \"language\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -724,13 +1068,13 @@
 						"header": [
 							{
 								"key": "Token",
-								"value": "UGE8Bb8rwpnMgWWtYVTkbmoqJ2Ci5tg5OpkaD6N31yKN2cLEAonykflvBv3n",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"getz@gmail.com\",\n    \"password\": \"Respons11\"\n}",
+							"raw": "{\n    \"email\": \"zesd@gmail.com\",\n    \"password\": \"Respons11\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -738,14 +1082,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/client/login",
+							"raw": "http://localhost:9000/user/login",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "9000",
 							"path": [
-								"client",
+								"user",
 								"login"
 							]
 						}
@@ -985,11 +1329,8 @@
 				},
 				{
 					"name": "Login To Manager",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Token",
@@ -1044,7 +1385,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Beaf Lesson 2\",\n    \"type\": \"Lesson\",\n    \"endtime\": \"2024-01-01 15:15:15\",\n    \"starttime\": \"2024-01-01 14:15:15\",\n    \"isinternal\": true,\n    \"isprivate\": false\n}",
+							"raw": "{\n    \"name\": \"Beaf Lesson\",\n    \"type\": \"Lesson\",\n    \"endtime\": \"2024-01-01 15:15:15\",\n    \"starttime\": \"2024-01-01 14:15:15\",\n    \"isinternal\": true,\n    \"isprivate\": false\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1052,7 +1393,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/event/4",
+							"raw": "http://localhost:9000/event/2",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1060,7 +1401,7 @@
 							"port": "9000",
 							"path": [
 								"event",
-								"4"
+								"2"
 							]
 						}
 					},
@@ -1158,7 +1499,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Beef\",\n    \"group_display_order\": 1\n}",
+							"raw": "{\n    \"name\": \"Potato\",\n    \"group_display_order\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1166,7 +1507,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/event/group/2",
+							"raw": "http://localhost:9000/event/group/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1175,7 +1516,7 @@
 							"path": [
 								"event",
 								"group",
-								"2"
+								"3"
 							]
 						}
 					},
@@ -1199,15 +1540,16 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9000/subscription/3",
+							"raw": "http://localhost:9000/event/group/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "9000",
 							"path": [
-								"subscription",
-								"3"
+								"event",
+								"group",
+								"1"
 							]
 						}
 					},
@@ -1316,7 +1658,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9000/event/participate/1/1",
+							"raw": "http://localhost:9000/event/participate/13/7",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1325,8 +1667,8 @@
 							"path": [
 								"event",
 								"participate",
-								"1",
-								"1"
+								"13",
+								"7"
 							]
 						}
 					},
@@ -1443,6 +1785,351 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get All Group Events",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/group/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"group",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Contractors Of An Event",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/animate/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"animate",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Managers Of An Event",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/organize/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"organize",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get CookingSpaces Of An Event",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/organize/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"organize",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Group Of An Event",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/groups/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"groups",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Clients Of An Event",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/participate/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"participate",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Formations By Client ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/group/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"group",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event By Month",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/month",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"month"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event By Types",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/type",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"type"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event By Day Of The Week",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/week",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"week"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event By Month In a Year",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/months",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"months"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Event By Top 5",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/months",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"months"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Formation Done",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/event/top5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"event",
+								"top5"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -1468,7 +2155,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"SeaFood Restaurant\",\n    \"size\": 5,\n    \"priceperhour\": 15.5,\n    \"idpremise\": 2\n}",
+							"raw": "{\n    \"name\": \"SeaFood Restaurant\",\n    \"size\": 5,\n    \"priceperhour\": 15.5\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1685,7 +2372,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"endtime\": \"2024-01-01 15:15:15\",\n    \"starttime\": \"2023-01-01 15:15:15\"\n}",
+							"raw": "{\n    \"endtime\": \"2028-04-01 09:00:00\",\n    \"starttime\": \"2028-04-01 08:00:01\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1693,7 +2380,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/cookingspace/books/1/3",
+							"raw": "http://localhost:9000/cookingspace/books/1/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1703,7 +2390,7 @@
 								"cookingspace",
 								"books",
 								"1",
-								"3"
+								"1"
 							]
 						}
 					},
@@ -1758,6 +2445,87 @@
 							"path": [
 								"cookingspace",
 								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Books",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/cookingspace/books/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"cookingspace",
+								"books",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Books For a Cooking Space",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/cookingspace/books/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"cookingspace",
+								"books",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Top 5 Cooking Spaces",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/cookingspace/books/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"cookingspace",
+								"books",
+								"1"
 							]
 						}
 					},
@@ -1860,7 +2628,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Erard\",\n    \"streetnumber\": 69,\n    \"streetname\": \"Rue du Pouvoir\",\n    \"city\": \"Paris\",\n    \"country\": \"France\"\n}",
+							"raw": "{\n    \"name\": \"Erard\",\n    \"streetnumber\": \"69\",\n    \"streetname\": \"Rue du Pouvoir\",\n    \"city\": \"Paris\",\n    \"country\": \"France\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1934,6 +2702,32 @@
 							"path": [
 								"premise",
 								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Books By Premises",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/premise/book",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"premise",
+								"book"
 							]
 						}
 					},
@@ -2036,7 +2830,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Pizza\",\n    \"description\": \"Its some really good shit\",\n    \"price\": 10\n}",
+							"raw": "{\n    \"name\": \"Sushis\",\n    \"description\": \"Its some really good shit\",\n    \"price\": 10\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2426,7 +3220,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/order/item/1/3",
+							"raw": "http://localhost:9000/order/item/3/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -2435,7 +3229,7 @@
 							"path": [
 								"order",
 								"item",
-								"1",
+								"3",
 								"3"
 							]
 						}
@@ -2512,7 +3306,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/order/food/1/3",
+							"raw": "http://localhost:9000/order/food/3/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -2521,7 +3315,7 @@
 							"path": [
 								"order",
 								"food",
-								"1",
+								"3",
 								"3"
 							]
 						}
@@ -2566,6 +3360,138 @@
 								"food",
 								"1",
 								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Items By Order ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/order/item/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"order",
+								"item",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Food By Order ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/order/food/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"order",
+								"food",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order By Month",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/order/month",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"order",
+								"month"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Top 5 Food",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/order/top5food",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"order",
+								"top5food"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Top 5 Item",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/order/top5item",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"order",
+								"top5item"
 							]
 						}
 					},
@@ -2668,7 +3594,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"jaiacheterdestrucsurcookmaster.pdf\",\n    \"type\": \"shopbill\",\n    \"iduser\": 1\n}",
+							"raw": "{\n    \"name\": \"jaiacheterdestrucsurcookmaster2.pdf\",\n    \"type\": \"shopbill\",\n    \"iduser\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3055,7 +3981,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Fork\",\n    \"description\": \"To eat\",\n    \"price\": 5,\n    \"stock\": 100,\n    \"reward\": \"none\"\n}",
+							"raw": "{\n    \"name\": \"Spoon\",\n    \"description\": \"To eat\",\n    \"price\": 5,\n    \"stock\": 100,\n    \"reward\": \"none\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3576,7 +4502,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"How to make good potatoes\",\n    \"content\" : \"Make good potatoes.\",\n    \"description\": \"Made With Love\",\n    \"difficulty\" : 1\n}",
+							"raw": "{\n    \"name\": \"How to make good potatoes2\",\n    \"content\" : \"Make good potatoes.\",\n    \"description\": \"Made With Love\",\n    \"difficulty\" : 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3584,7 +4510,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/lesson/2",
+							"raw": "http://localhost:9000/lesson/5",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -3592,7 +4518,7 @@
 							"port": "9000",
 							"path": [
 								"lesson",
-								"2"
+								"5"
 							]
 						}
 					},
@@ -3696,7 +4622,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Potato Course\",\n    \"group_display_order\": 2\n}",
+							"raw": "{\n    \"name\": \"Fries Chefs\",\n    \"group_display_order\": 0\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3704,7 +4630,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/lesson/group/2",
+							"raw": "http://localhost:9000/lesson/group/5",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -3713,7 +4639,7 @@
 							"path": [
 								"lesson",
 								"group",
-								"2"
+								"5"
 							]
 						}
 					},
@@ -3820,6 +4746,87 @@
 							"path": [
 								"lesson",
 								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Group Lessons",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/group/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"group",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User ID By Lesson ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/group/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"group",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lessons By Difficulty",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/user/4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"user",
+								"4"
 							]
 						}
 					},
