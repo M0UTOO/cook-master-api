@@ -17,6 +17,7 @@ import (
 	"cook-master-api/bills"
 	"cook-master-api/token"
 	"cook-master-api/users"
+	"cook-master-api/utils"
 	"cook-master-api/languages"
 
 	//"cook-master-api/conversations"
@@ -29,6 +30,7 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
 	r.GET("/", index)
+	r.Use(utils.CorsMiddleware())
 	user := r.Group("/user")
 	user.GET("/:id", users.GetUserByID(tokenAPI))                // WORKING
 	user.GET("/search/:filter", users.GetUserByFilter(tokenAPI)) // WORKING
@@ -142,6 +144,9 @@ func main() {
 	lesson.GET("/group/all", lessons.GetGroupLessons(tokenAPI)) // WORKING
 	lesson.GET("/user/:id", lessons.GetUserIdByLessonId(tokenAPI)) // WORKING
 	lesson.GET("/difficulty", lessons.GetLessonsWatchedByDifficulty(tokenAPI)) // WORKING
+	lesson.GET("/group/get/:id", lessons.GetGroupByGroupId(tokenAPI)) // WORKING
+	lesson.DELETE("/group/delete/:id", lessons.DeleteLessonGroup(tokenAPI)) // WORKING
+	lesson.POST("/group/post", lessons.CreateLessonGroup(tokenAPI)) // WORKING
 	food := r.Group("/food")
 	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
 	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING

@@ -29,6 +29,19 @@ type LessonGroup struct {
 func GetLessons(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
+		type LessonReq struct {
+			IdLesson          int    `json:"idlesson"`
+			Name              string `json:"name"`
+			Content           string `json:"content"`
+			Description       string `json:"description"`
+			Difficulty        int    `json:"difficulty"`
+			GroupDisplayOrder int    `json:"group_display_order"`
+			IdLessonGroup     int    `json:"idlessongroup"`
+			IdUser 		  int    `json:"iduser"`
+			Firstname         string `json:"firstname"`
+			Lastname          string `json:"lastname"`
+		}
+
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil {
 			c.JSON(498, gin.H{
@@ -56,7 +69,7 @@ func GetLessons(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT * FROM LESSONS")
+		rows, err := db.Query("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -66,11 +79,11 @@ func GetLessons(tokenAPI string) func(c *gin.Context) {
 		}
 		defer rows.Close()
 
-		var lessons []Lesson
+		var lessons []LessonReq
 
 		for rows.Next() {
-			var lesson Lesson
-			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup)
+			var lesson LessonReq
+			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -151,6 +164,19 @@ func GetGroupLessons(tokenAPI string) func(c *gin.Context) {
 func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
+		type LessonReq struct {
+			IdLesson          int    `json:"idlesson"`
+			Name              string `json:"name"`
+			Content           string `json:"content"`
+			Description       string `json:"description"`
+			Difficulty        int    `json:"difficulty"`
+			GroupDisplayOrder int    `json:"group_display_order"`
+			IdLessonGroup     int    `json:"idlessongroup"`
+			IdUser 		  int    `json:"iduser"`
+			Firstname         string `json:"firstname"`
+			Lastname          string `json:"lastname"`
+		}
+
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil {
 			c.JSON(498, gin.H{
@@ -195,10 +221,11 @@ func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		var lesson Lesson
+		var lesson LessonReq
 
-		err = db.QueryRow("SELECT * FROM LESSONS WHERE Id_LESSONS = ?", id).Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup)
+		err = db.QueryRow("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE LESSONS.Id_LESSONS = ?", id).Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "cannot get lesson",
@@ -475,6 +502,8 @@ func AddLessonToAGroup(tokenAPI string) func(c *gin.Context) {
 
 		var group Group
 		c.BindJSON(&group)
+
+		fmt.Println(group)
 
 		if group.Name != "" {
 			if !utils.IsSafeString(group.Name) {
@@ -983,5 +1012,226 @@ func GetLessonsWatchedByDifficulty(tokenAPI string) func(c *gin.Context) {
 
 		c.JSON(200, countdifficulties)
 		return
+	}
+}
+
+func GetGroupByGroupId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Group struct {
+			IdGroup int `json:"idgroup"`
+			Name string `json:"name"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id group can't be empty",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id group can't contain sql injection",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+		var group Group
+		err = db.QueryRow("SELECT Id_LESSONS_GROUPS, name FROM LESSONS_GROUPS WHERE Id_LESSONS_GROUPS = ?", id).Scan(&group.IdGroup, &group.Name)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get group",
+			})
+			return
+		}
+		c.JSON(200, group)
+	}
+}
+
+func DeleteLessonGroup(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id group can't be empty",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id group can't contain sql injection",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+		
+		var idGroup int
+
+		err = db.QueryRow("SELECT Id_LESSONS_GROUPS FROM LESSONS_GROUPS WHERE Id_LESSONS_GROUPS = ?", id).Scan(&idGroup)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get group",
+			})
+			return
+		}
+
+		_, err = db.Exec("UPDATE LESSONS SET Id_LESSONS_GROUPS = 1, group_display_order = 0 WHERE Id_LESSONS_GROUPS = ?", idGroup)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot update lessons",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM LESSONS_GROUPS WHERE Id_LESSONS_GROUPS = ?", idGroup)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot delete group",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "group deleted",
+		})
+	}
+}
+
+func CreateLessonGroup(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Group struct {
+			Name string `json:"name"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		var group Group
+		c.BindJSON(&group)
+
+		if group.Name == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "name can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(group.Name) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "name can't contain sql injection",
+			})
+			return
+		}
+
+		if len(group.Name) < 0 || len(group.Name) > 100 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "wrong name lenght",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+		
+		_, err = db.Exec("INSERT INTO LESSONS_GROUPS (name) VALUES (?)", group.Name)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot insert group",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "group created",
+		})
 	}
 }
