@@ -2117,7 +2117,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9000/event/top5",
+							"raw": "http://localhost:9000/event/formation",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -2125,7 +2125,7 @@
 							"port": "9000",
 							"path": [
 								"event",
-								"top5"
+								"formation"
 							]
 						}
 					},
@@ -4622,7 +4622,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Fries Chefs\",\n    \"group_display_order\": 0\n}",
+							"raw": "{\n    \"name\": \"Tomato Pizza\",\n    \"group_display_order\": 3\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4630,7 +4630,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:9000/lesson/group/5",
+							"raw": "http://localhost:9000/lesson/group/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -4639,7 +4639,7 @@
 							"path": [
 								"lesson",
 								"group",
-								"5"
+								"3"
 							]
 						}
 					},
@@ -4790,7 +4790,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:9000/lesson/group/all",
+							"raw": "http://localhost:9000/lesson/user/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -4798,8 +4798,8 @@
 							"port": "9000",
 							"path": [
 								"lesson",
-								"group",
-								"all"
+								"user",
+								"3"
 							]
 						}
 					},
@@ -4826,6 +4826,204 @@
 							"path": [
 								"lesson",
 								"user",
+								"4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Lesson Group By Group ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/group/get/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"group",
+								"get",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Lesson Group",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Manager",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/group/delete/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"group",
+								"delete",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lesson Group",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Manager",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Tomata Groups\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:9000/lesson/group/post",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"group",
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Client Views",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Manager",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/views/62",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"views",
+								"62"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Count Client Views",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							},
+							{
+								"key": "Type",
+								"value": "Manager",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/views/62",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"views",
+								"62"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Is Lesson Watched",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Token",
+								"value": "TTGMJe1gEaCGgcq5qtHxoUyulzIvkKhBloPP9HwOey3gpDeZnGeYBKCGbJUd",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:9000/lesson/watch/62/4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"lesson",
+								"watch",
+								"62",
 								"4"
 							]
 						}

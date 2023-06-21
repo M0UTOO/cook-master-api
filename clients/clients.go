@@ -516,7 +516,7 @@ func WatchLesson(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO WATCHES (Id_CLIENTS, Id_LESSONS) VALUES (?, ?)", idlesson, idclient)
+		_, err = db.Exec("INSERT INTO WATCHES (Id_CLIENTS, Id_LESSONS, dateTime) VALUES (?, ?, DEFAULT)", idlesson, idclient)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{

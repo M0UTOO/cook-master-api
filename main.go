@@ -147,6 +147,10 @@ func main() {
 	lesson.GET("/group/get/:id", lessons.GetGroupByGroupId(tokenAPI)) // WORKING
 	lesson.DELETE("/group/delete/:id", lessons.DeleteLessonGroup(tokenAPI)) // WORKING
 	lesson.POST("/group/post", lessons.CreateLessonGroup(tokenAPI)) // WORKING
+	lesson.GET("/suggested", lessons.GetSuggestedLessons(tokenAPI)) // WORKING
+	lesson.DELETE("/views/:id", lessons.UpdateLessonViews(tokenAPI)) // WORKING
+	lesson.GET("/views/:id", lessons.GetAllClientViews(tokenAPI)) // WORKING
+	lesson.GET("/watch/:iduser/:idlesson", lessons.IsLessonWatched(tokenAPI)) // WORKING
 	food := r.Group("/food")
 	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
 	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING

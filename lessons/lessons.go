@@ -18,6 +18,7 @@ type Lesson struct {
 	Description       string `json:"description"`
 	Difficulty        int    `json:"difficulty"`
 	GroupDisplayOrder int    `json:"group_display_order"`
+	Picture 		 string `json:"picture"`
 	IdLessonGroup     int    `json:"idlessongroup"`
 }
 
@@ -35,6 +36,7 @@ func GetLessons(tokenAPI string) func(c *gin.Context) {
 			Content           string `json:"content"`
 			Description       string `json:"description"`
 			Difficulty        int    `json:"difficulty"`
+			Picture 		 string `json:"picture"`
 			GroupDisplayOrder int    `json:"group_display_order"`
 			IdLessonGroup     int    `json:"idlessongroup"`
 			IdUser 		  int    `json:"iduser"`
@@ -69,7 +71,7 @@ func GetLessons(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS")
+		rows, err := db.Query("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.picture, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS")
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -83,7 +85,7 @@ func GetLessons(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var lesson LessonReq
-			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
+			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -159,8 +161,6 @@ func GetGroupLessons(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
-
-
 func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
@@ -170,6 +170,7 @@ func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 			Content           string `json:"content"`
 			Description       string `json:"description"`
 			Difficulty        int    `json:"difficulty"`
+			Picture 		 string `json:"picture"`
 			GroupDisplayOrder int    `json:"group_display_order"`
 			IdLessonGroup     int    `json:"idlessongroup"`
 			IdUser 		  int    `json:"iduser"`
@@ -223,7 +224,7 @@ func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 
 		var lesson LessonReq
 
-		err = db.QueryRow("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE LESSONS.Id_LESSONS = ?", id).Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
+		err = db.QueryRow("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.picture, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE LESSONS.Id_LESSONS = ?", id).Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -298,7 +299,7 @@ func GetLessonsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var lesson Lesson
-			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.IdLessonGroup)
+			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -421,7 +422,7 @@ func Postlesson(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
-		result, err := db.Exec("INSERT INTO LESSONS (Name, Content, Description, Difficulty, group_display_order, Id_LESSONS_GROUPS) VALUES (?, ?, ?, ?, ?, ?)", lesson.Name, lesson.Content, lesson.Description, lesson.Difficulty, 0, 1)
+		result, err := db.Exec("INSERT INTO LESSONS (Name, Content, Description, Difficulty, group_display_order, picture, Id_LESSONS_GROUPS) VALUES (?, ?, ?, ?, ?, DEFAULT, ?)", lesson.Name, lesson.Content, lesson.Description, lesson.Difficulty, 0, 1)
 		fmt.Println(err)
 		if err != nil {
 			
@@ -856,6 +857,23 @@ func UpdateLesson(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "difficulty = '"+strconv.Itoa(lesson.Difficulty)+"'")
 		}
 
+		if lesson.Picture != "" {
+			if !utils.IsSafeString(lesson.Picture) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "picture can't contain sql injection",
+				})
+				return
+			}
+			if len(lesson.Picture) < 0 || len(lesson.Picture) > 255 {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "wrong picture lenght",
+				})
+			}
+			setClause = append(setClause, "picture = '"+lesson.Picture+"'")
+		}
+
 		if len(setClause) == 0 {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -1232,6 +1250,314 @@ func CreateLessonGroup(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"error":   false,
 			"message": "group created",
+		})
+	}
+}
+
+func GetSuggestedLessons(tokenAPI string) func (c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+		
+		rows, err := db.Query("SELECT * FROM LESSONS ORDER BY RAND() LIMIT 5")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get lessons",
+			})
+			return
+		}
+
+		var lessons []Lesson
+
+		for rows.Next() {
+			var lesson Lesson
+			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot get lesson",
+				})
+				return
+			}
+			lessons = append(lessons, lesson)
+		}
+
+		c.JSON(200, lessons)
+	}
+}
+
+func UpdateLessonViews(tokenAPI string) func (c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "user id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "user id can't contain sql injection",
+			})
+			return
+		}
+
+		var idClient int
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = ?", id).Scan(&idClient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get client",
+			})
+			return
+		}
+
+		_, err = db.Query("DELETE FROM WATCHES WHERE dateTime < NOW() - INTERVAL 1 DAY AND Id_CLIENTS = ?", idClient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot delete views",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "views updated",
+		})
+	}
+}
+
+func GetAllClientViews(tokenAPI string) func (c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "user id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "user id can't contain sql injection",
+			})
+			return
+		}
+
+		var idClient int
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = ?", id).Scan(&idClient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get client",
+			})
+			return
+		}
+
+		var count int
+
+		err = db.QueryRow("SELECT COUNT(*) FROM WATCHES WHERE Id_CLIENTS = ?", idClient).Scan(&count)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot delete views",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"count": count,
+		})
+	}
+}
+
+func IsLessonWatched(tokenAPI string) func (c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}	
+		defer db.Close()
+
+		iduser := c.Param("iduser")
+		if iduser == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "user id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(iduser) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "user id can't contain sql injection",
+			})
+			return
+		}
+
+		idlesson := c.Param("idlesson")
+		if idlesson == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "lesson id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idlesson) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "lesson id can't contain sql injection",
+			})
+			return
+		}
+
+		var idClient int
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = ?", iduser).Scan(&idClient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get client",
+			})
+			return
+		}
+
+		var isWatched int
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM WATCHES WHERE Id_CLIENTS = ? AND Id_LESSONS = ?", idClient, idlesson).Scan(&isWatched)
+		if err != nil {
+			c.JSON(200, gin.H{
+				"error":   false,
+				"iswatched": false,
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"iswatched": true,
 		})
 	}
 }
