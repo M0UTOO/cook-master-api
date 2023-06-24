@@ -571,7 +571,6 @@ insert into EVENTS_GROUPS (Id_EVENTS_GROUPS, name) values (17, 'Rice - Formation
 insert into EVENTS_GROUPS (Id_EVENTS_GROUPS, name) values (18, 'Bread - Formation');
 insert into EVENTS_GROUPS (Id_EVENTS_GROUPS, name) values (19, 'Cake - Formation');
 insert into EVENTS_GROUPS (Id_EVENTS_GROUPS, name) values (20, 'Ice Cream - Formation');
-<<<<<<< HEAD
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (1, 'orci', 'Teaching Session', '2021-12-27 04:41:35', false, '2021-06-08 08:49:38', true, true, 3, 'http://dummyimage.com/239x121.png/dddddd/000000', 10);
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (2, 'faucibus accumsan odio', 'Teaching Session', '2021-04-22 23:43:18', true, '2022-07-20 20:05:13', true, true, 9, 'http://dummyimage.com/161x153.png/ff4444/ffffff', 20);
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (3, 'lorem integer tincidunt ante', 'Training', '2020-05-09 08:01:48', true, '2022-04-12 00:08:46', false, true, 3, 'http://dummyimage.com/124x199.png/5fa2dd/ffffff', 12);
@@ -781,7 +780,6 @@ insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePer
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (3, 'Red meerkat', 55, false, 15.44, 1);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (4, 'Lion, steller''s sea', 30, true, 4.4, 1);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (5, 'Sea Food Restaurant', 54, true, 5.09, 1);
-=======
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (1, 'orci', 'Teaching Session', '2021-12-27 04:41:35', false, '2021-06-08 08:49:38', true, true, 3, 'default.png', 10);
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (2, 'faucibus accumsan odio', 'Teaching Session', '2021-04-22 23:43:18', true, '2022-07-20 20:05:13', true, true, 9, 'default.png', 20);
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (3, 'lorem integer tincidunt ante', 'Training', '2020-05-09 08:01:48', true, '2022-04-12 00:08:46', false, true, 3, 'default.png', 12);
@@ -997,7 +995,6 @@ insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePer
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (3, 'Red meerkat', 55, false, 15.44, 3);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (4, 'Lion, steller''s sea', 30, true, 4.4, 9);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (5, 'Sea Food Restaurant', 54, true, 5.09, 10);
->>>>>>> 535900a (changes on inserts)
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (6, 'Lemur, sportive', 20, false, 12.53, 3);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (7, 'Bare-faced go away bird', 52, false, 18.26, 1);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (8, 'Magellanic penguin', 58, false, 13.32, 1);
