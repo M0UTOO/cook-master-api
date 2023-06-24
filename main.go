@@ -195,6 +195,7 @@ func main() {
 	order.GET("/month", orders.GetOrdersByMonth(tokenAPI))  // WORKING
 	order.GET("/top5item", orders.GetTop5Items(tokenAPI))  // WORKING
 	order.GET("/top5food", orders.GetTop5Food(tokenAPI))  // WORKING
+	order.GET("/random", orders.GetRandomFoods(tokenAPI))  // WORKING
 	language := r.Group("/language")
 	language.GET("/all", languages.GetLanguages(tokenAPI))      // WORKING
 	language.GET("/:id", languages.GetLanguageByID(tokenAPI))   // WORKING

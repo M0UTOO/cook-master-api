@@ -1360,3 +1360,70 @@ func GetTop5Food(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetRandomFoods(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type RandomFood struct {
+			Name string `json:"name"`
+			Picture        string    `json:"picture"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT name, picture FROM FOODS ORDER BY RAND() LIMIT 6;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var randomfoods []RandomFood
+
+		for rows.Next() {
+			var randomfood RandomFood
+			err = rows.Scan(&randomfood.Name, &randomfood.Picture)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "random 6 not found",
+				})
+				return
+			}
+			randomfoods = append(randomfoods, randomfood)
+		}
+
+		c.JSON(200, randomfoods)
+		return
+	}
+}
