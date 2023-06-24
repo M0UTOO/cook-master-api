@@ -2684,5 +2684,83 @@ func GetFormationsDone(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
+func SearchForEvents(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		search := c.Param("search")
+		if search == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "search can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(search) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "search can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT * FROM EVENTS WHERE name LIKE '%" + search + "%'")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var events []Event
+
+		for rows.Next() {
+			var event Event
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "events not found",
+				})
+				return
+			}
+			events = append(events, event)
+		}
+
+		c.JSON(200, events)
+		return
+	}
+}
+
 
 

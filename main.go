@@ -97,6 +97,7 @@ func main() {
 	event.GET("/week", events.GetEventsByDayOfTheWeek(tokenAPI)) // WORKING
 	event.GET("/top5", events.GetTop5Events(tokenAPI)) // WORKING
 	event.GET("/formation", events.GetFormationsDone(tokenAPI)) // WORKING
+	event.POST("/search/:search", events.SearchForEvents(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING
