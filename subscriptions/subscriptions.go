@@ -18,6 +18,9 @@ type Subscription struct {
 	MaxLessonAccess int `json:"maxlessonaccess"`
 	Picture string `json:"picture"`
 	Description string `json:"description"`
+	AllowRoomBooking bool `json:"allowroombooking"`
+	AllowShopReduction bool `json:"allowshoreduction"`
+	AllowChat bool `json:"allowchat"`
 }
 
 func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
@@ -64,7 +67,7 @@ func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var subscription Subscription
-			err := rows.Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description)
+			err := rows.Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description, &subscription.AllowRoomBooking, &subscription.AllowShopReduction, &subscription.AllowChat)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -127,7 +130,7 @@ func GetSubscriptionByID(tokenAPI string) func(c *gin.Context) {
 
 		var subscription Subscription
 
-		err = db.QueryRow("SELECT * FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + id).Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description)
+		err = db.QueryRow("SELECT * FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + id).Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description, &subscription.AllowRoomBooking, &subscription.AllowShopReduction, &subscription.AllowChat)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error": true,
@@ -210,7 +213,7 @@ func PostSubscription(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		result, err := db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description) VALUES (?, ?, ?, DEFAULT, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Description)
+		result, err := db.Exec("INSERT INTO SUBSCRIPTIONS (name, price, max_lesson_access, picture, description, allowRoomBooking, allowShopReduction, allowChat) VALUES (?, ?, ?, DEFAULT, ?, ?, ?, ?)", subscription.Name, subscription.Price, subscription.MaxLessonAccess, subscription.Description, subscription.AllowRoomBooking, subscription.AllowShopReduction, subscription.AllowChat)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{

@@ -36,6 +36,9 @@ CREATE TABLE SUBSCRIPTIONS(
    max_lesson_access INT,
    picture VARCHAR(50)  DEFAULT 'default.png',
    description TEXT,
+   allowRoomBooking BOOLEAN DEFAULT false,
+   allowShopReduction BOOLEAN DEFAULT false,
+   allowChat BOOLEAN DEFAULT false,
    PRIMARY KEY(Id_SUBSCRIPTIONS),
    UNIQUE(name)
 );

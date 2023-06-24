@@ -32,65 +32,65 @@ func main() {
 	r.GET("/", index)
 	r.Use(utils.CorsMiddleware())
 	user := r.Group("/user")
-	user.GET("/:id", users.GetUserByID(tokenAPI))                // WORKING
-	user.GET("/search/:filter", users.GetUserByFilter(tokenAPI)) // WORKING
-	user.PATCH("/:id", users.UpdateUser(tokenAPI))               // WORKING
-	user.GET("/all", users.GetUsers(tokenAPI))                   // WORKING
-	user.POST("/", users.PostUser(tokenAPI))                     // WORKING
-	user.POST("/login", users.LoginUser(tokenAPI)) 				 // WORKING
-	user.DELETE("/:id", users.DeleteUser(tokenAPI))              // WORKING
-	user.POST("/password", users.GetPasswordByEmail(tokenAPI)) // WORKING
+	user.GET("/:id", users.GetUserByID(tokenAPI))                										// WORKING
+	user.GET("/search/:filter", users.GetUserByFilter(tokenAPI)) 										// WORKING
+	user.PATCH("/:id", users.UpdateUser(tokenAPI))               										// WORKING
+	user.GET("/all", users.GetUsers(tokenAPI))                   										// WORKING
+	user.POST("/", users.PostUser(tokenAPI))                     										// WORKING
+	user.POST("/login", users.LoginUser(tokenAPI)) 				 										// WORKING
+	user.DELETE("/:id", users.DeleteUser(tokenAPI))              										// WORKING
+	user.POST("/password", users.GetPasswordByEmail(tokenAPI)) 											// WORKING
 	client := r.Group("/client")
-	client.GET("/all", clients.GetClients(tokenAPI))       			// WORKING                                             
-	client.GET("/:id", clients.GetClientByID(tokenAPI))             // WORKING                                    
-	client.PATCH("/:id", clients.UpdateClient(tokenAPI))            // WORKING                          
+	client.GET("/all", clients.GetClients(tokenAPI))       												// WORKING                                             
+	client.GET("/:id", clients.GetClientByID(tokenAPI))             									// WORKING                                    
+	client.PATCH("/:id", clients.UpdateClient(tokenAPI))            									// WORKING                          
 	client.PATCH("/subscription/:iduser/:idsubscription", clients.UpdateClientSubscription(tokenAPI))   // WORKING
 	client.PATCH("/watch/:idclient/:idlesson", clients.WatchLesson(tokenAPI))  							// WORKING                           
 	client.DELETE("/watch/:idclient/:idlesson", clients.UnWatchLesson(tokenAPI))     					// WORKING     
-	client.GET("/subscription", clients.GetAllSubscription(tokenAPI)) // WORKING          
-	client.GET("/participation", clients.GetAverageClientParticipationByMonth(tokenAPI)) // WORKING
-	client.GET("/money", clients.GetAverageMoneySpentByClient(tokenAPI)) // WORKING")
-	client.GET("/country", clients.GetClientsByCountry(tokenAPI)) // WORKING
-	client.GET("/top5", clients.GetTop5Client(tokenAPI)) // WORKING
+	client.GET("/subscription", clients.GetAllSubscription(tokenAPI)) 									// WORKING          
+	client.GET("/participation", clients.GetAverageClientParticipationByMonth(tokenAPI)) 				// WORKING
+	client.GET("/money", clients.GetAverageMoneySpentByClient(tokenAPI)) 								// WORKING
+	client.GET("/country", clients.GetClientsByCountry(tokenAPI)) 										// WORKING
+	client.GET("/top5", clients.GetTop5Client(tokenAPI)) 												// WORKING
 	contractor := r.Group("/contractor")
-	contractor.GET("/all", contractors.GetContractors(tokenAPI))    			// WORKING 
-	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  			// WORKING
-	contractor.PATCH("/:id", contractors.UpdateContractor(tokenAPI))  			// WORKING
-	contractor.POST("/type", contractors.AddAContractorType(tokenAPI)) 			// WORKING
-	contractor.DELETE("/type/:id", contractors.DeleteAContractorType(tokenAPI)) // WORKING
-	contractor.GET("/type", contractors.GetContractorTypes(tokenAPI)) 			// WORKING
+	contractor.GET("/all", contractors.GetContractors(tokenAPI))    									// WORKING 
+	contractor.GET("/:id", contractors.GetContractorByID(tokenAPI))  									// WORKING
+	contractor.PATCH("/:id", contractors.UpdateContractor(tokenAPI))  									// WORKING
+	contractor.POST("/type", contractors.AddAContractorType(tokenAPI)) 									// WORKING
+	contractor.DELETE("/type/:id", contractors.DeleteAContractorType(tokenAPI)) 						// WORKING
+	contractor.GET("/type", contractors.GetContractorTypes(tokenAPI)) 									// WORKING
 	manager := r.Group("/manager")
-	manager.GET("/all", managers.GetManagers(tokenAPI))      // WORKING
-	manager.GET("/:id", managers.GetManagerByID(tokenAPI))   // WORKING
-	manager.PATCH("/:id", managers.UpdateManager(tokenAPI))  // WORKING
+	manager.GET("/all", managers.GetManagers(tokenAPI))      											// WORKING
+	manager.GET("/:id", managers.GetManagerByID(tokenAPI))   											// WORKING
+	manager.PATCH("/:id", managers.UpdateManager(tokenAPI))  											// WORKING
 	subscription := r.Group("/subscription")
-	subscription.GET("/all", subscriptions.GetSubscriptions(tokenAPI))      // WORKING
-	subscription.GET("/:id", subscriptions.GetSubscriptionByID(tokenAPI))    // WORKING
-	subscription.POST("/", subscriptions.PostSubscription(tokenAPI))       // WORKING 
-	subscription.DELETE("/:id", subscriptions.DeleteSubscription(tokenAPI))  // WORKING
-	subscription.PATCH("/:id", subscriptions.UpdateSubscription(tokenAPI))  // WORKING
+	subscription.GET("/all", subscriptions.GetSubscriptions(tokenAPI))      							// WORKING
+	subscription.GET("/:id", subscriptions.GetSubscriptionByID(tokenAPI))    							// WORKING
+	subscription.POST("/", subscriptions.PostSubscription(tokenAPI))       								// WORKING 
+	subscription.DELETE("/:id", subscriptions.DeleteSubscription(tokenAPI))  							// WORKING
+	subscription.PATCH("/:id", subscriptions.UpdateSubscription(tokenAPI))  							// WORKING
 	event := r.Group("/event")
-	event.GET("/all", events.GetEvents(tokenAPI))              // WORKING                                  
-	event.GET("/:id", events.GetEventByID(tokenAPI))                        // WORKING                     
-	event.GET("/group/:id", events.GetEventsByGroupID(tokenAPI))            // WORKING                     
-	event.POST("/:id", events.PostEvent(tokenAPI))                        // WORKING                       
-	event.POST("/group/:id", events.AddEventToAGroup(tokenAPI))                              // WORKING    
-	event.DELETE("/group/:id", events.DeleteEventFromAGroup(tokenAPI))                    // WORKING       
-	event.PATCH("/:id", events.UpdateEvent(tokenAPI))                                            // WORKING
-	event.GET("/animate/:idevent/:iduser", events.AddContractorToAnEvent(tokenAPI))              // WORKING
-	event.DELETE("/animate/:idevent/:iduser", events.DeleteContractorFromAnEvent(tokenAPI))      // WORKING
-	event.GET("/animate/:idevent", events.GetContractorsByEventID(tokenAPI))                     // WORKING
-	event.GET("/organize/:idevent", events.GetManagersByEventID(tokenAPI))                       // WORKING
-	event.GET("/participate/:idevent", events.GetClientsByEventID(tokenAPI))                      // WORKING
-	event.GET("/groups/:idevent", events.GetGroupsByEventID(tokenAPI))                             // WORKING
-	event.GET("/host/:idevent", events.GetCookingSpacesByEventID(tokenAPI))                       // WORKING
-	event.GET("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              // WORKING
-	event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI))      // WORKING
-	event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        // WORKING
-	event.PATCH("/host/:idevent/:idcookingspace", events.AddEventToAnCookingSpace(tokenAPI))     // WORKING
-	event.DELETE("/host/:idevent/:idcookingspace", events.DeleteEventToAnCookingSpace(tokenAPI)) // WORKING
-	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) // WORKING
-	event.GET("/formation/:iduser", events.GetAllFormationsByUserID(tokenAPI)) // WORKING
+	event.GET("/all", events.GetEvents(tokenAPI))            			 								// WORKING                                  
+	event.GET("/:id", events.GetEventByID(tokenAPI))                        							// WORKING                     
+	event.GET("/group/:id", events.GetEventsByGroupID(tokenAPI))            							// WORKING                     
+	event.POST("/:id", events.PostEvent(tokenAPI))                        								// WORKING                       
+	event.POST("/group/:id", events.AddEventToAGroup(tokenAPI))                              			// WORKING    
+	event.DELETE("/group/:id", events.DeleteEventFromAGroup(tokenAPI))                    				// WORKING       
+	event.PATCH("/:id", events.UpdateEvent(tokenAPI))                                            		// WORKING
+	event.GET("/animate/:idevent/:iduser", events.AddContractorToAnEvent(tokenAPI))              		// WORKING
+	event.DELETE("/animate/:idevent/:iduser", events.DeleteContractorFromAnEvent(tokenAPI))      		// WORKING
+	event.GET("/animate/:idevent", events.GetContractorsByEventID(tokenAPI))                     		// WORKING
+	event.GET("/organize/:idevent", events.GetManagersByEventID(tokenAPI))                       		// WORKING
+	event.GET("/participate/:idevent", events.GetClientsByEventID(tokenAPI))                      		// WORKING
+	event.GET("/groups/:idevent", events.GetGroupsByEventID(tokenAPI))                             		// WORKING
+	event.GET("/host/:idevent", events.GetCookingSpacesByEventID(tokenAPI))                       		// WORKING
+	event.GET("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              		// WORKING
+	event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI))      		// WORKING
+	event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        		// WORKING
+	event.PATCH("/host/:idevent/:idcookingspace", events.AddEventToAnCookingSpace(tokenAPI))     		// WORKING
+	event.DELETE("/host/:idevent/:idcookingspace", events.DeleteEventToAnCookingSpace(tokenAPI)) 		// WORKING
+	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) 											// WORKING
+	event.GET("/formation/:iduser", events.GetAllFormationsByUserID(tokenAPI))							// WORKING
 	event.GET("/month", events.GetEventsByMonth(tokenAPI)) // WORKING
 	event.GET("/months", events.GetEventsByMonthInAYear(tokenAPI)) // WORKING
 	event.GET("/type", events.GetEventsByType(tokenAPI)) // WORKING
