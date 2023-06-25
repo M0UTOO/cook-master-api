@@ -25,6 +25,7 @@ type CookingSpace struct {
 	IsAvailable    bool    `json:"isAvailable"`
 	PricePerHour   float64 `json:"pricePerHour"`
 	IdPremise      int     `json:"idPremise"`
+	Picture 	   string  `json:"picture"`
 }
 
 type Books struct {
@@ -78,7 +79,7 @@ func GetCookingSpaces(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var cookingspace CookingSpace
-			err = rows.Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.IdPremise)
+			err = rows.Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.Picture, &cookingspace.IdPremise)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -143,7 +144,7 @@ func GetCookingSpaceByID(tokenAPI string) func(c *gin.Context) {
 
 		var cookingspace CookingSpace
 
-		err = db.QueryRow("SELECT * FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?", id).Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.IdPremise)
+		err = db.QueryRow("SELECT * FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?", id).Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.Picture,&cookingspace.IdPremise)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -217,7 +218,7 @@ func GetCookingSpacesByPremiseID(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var cookingspace CookingSpace
-			err = rows.Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.IdPremise)
+			err = rows.Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.Picture, &cookingspace.IdPremise)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -304,7 +305,7 @@ func PostCookingSpace(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
-		rows, err := db.Exec("INSERT INTO COOKING_SPACES (Name, Size, PricePerHour, Id_PREMISES) VALUES (?, ?, ?, ?)", cookingspace.Name, cookingspace.Size, cookingspace.PricePerHour, 1)
+		rows, err := db.Exec("INSERT INTO COOKING_SPACES (Name, Size, PricePerHour, picture, Id_PREMISES) VALUES (?, ?, ?, ?, ?)", cookingspace.Name, cookingspace.Size, cookingspace.PricePerHour, cookingspace.Picture, 1)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -504,6 +505,7 @@ func UpdateCookingSpace(tokenAPI string) func(c *gin.Context) {
 			Size         int     `json:"size"`
 			IsAvailable  int     `json:"isAvailable"`
 			PricePerHour float64 `json:"pricePerHour"`
+			Picture 	 string  `json:"picture"`
 		}
 
 		tokenHeader := c.Request.Header["Token"]
@@ -573,6 +575,17 @@ func UpdateCookingSpace(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "name = '"+cookingspace.Name+"'")
 		}
 
+		if cookingspace.Picture != "" {
+			if !utils.IsSafeString(cookingspace.Picture) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "picture can't contain sql injection",
+				})
+				return
+			}
+			setClause = append(setClause, "picture = '"+cookingspace.Picture+"'")
+		}
+
 		if cookingspace.Size > 0 {
 			setClause = append(setClause, "size = '"+strconv.Itoa(cookingspace.Size)+"'")
 		}
@@ -628,6 +641,7 @@ func UpdateCookingSpace(tokenAPI string) func(c *gin.Context) {
 
 		c.JSON(200, gin.H{
 			"error":   false,
+			"id" : idcookingspace,
 			"message": "cookingspace updated",
 		})
 	}
@@ -996,8 +1010,9 @@ func DeleteCookingSpace(tokenAPI string) func(c *gin.Context) {
 		defer db.Close()
 
 		var idcookingspace int
+		var picture string
 
-		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?", id).Scan(&idcookingspace)
+		err = db.QueryRow("SELECT Id_COOKING_SPACES, picture FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?", id).Scan(&idcookingspace, &picture)
 		if err != nil {
 			c.JSON(500, gin.H{
 				"error":   true,
@@ -1054,6 +1069,7 @@ func DeleteCookingSpace(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"error":   false,
 			"message": "cookingspace deleted",
+			"picture": picture,
 		})
 	}
 }
