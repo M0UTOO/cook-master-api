@@ -20,3 +20,5 @@
 
 # VsCode Config
 .vscode
+
+token/token.go
