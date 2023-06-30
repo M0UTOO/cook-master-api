@@ -15,6 +15,7 @@ import (
 type Event struct {
 	IdEvent           int    `json:"idevent"`
 	Name              string `json:"name"`
+	Description       string `json:"description"`
 	Type              string `json:"type"`
 	EndTime           string `json:"endtime"`
 	IsClosed          bool   `json:"isclosed"`
@@ -75,7 +76,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -200,7 +201,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 
 		var event Event
 
-		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -276,7 +277,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Description, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -342,18 +343,18 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		if !utils.IsSafeString(event.Name) || !utils.IsSafeString(event.Type) {
+		if !utils.IsSafeString(event.Name) || !utils.IsSafeString(event.Type) || !utils.IsSafeString(event.Description) {
 			c.JSON(400, gin.H{
 				"error":   true,
-				"message": "name or type can't contain sql injection",
+				"message": "name or type or description can't contain sql injection",
 			})
 			return
 		}
 
-		if event.Name == "" || event.Type == "" || event.EndTime == "" || event.StartTime == "" {
+		if event.Name == "" || event.Type == "" || event.EndTime == "" || event.StartTime == "" || event.Description == ""{
 			c.JSON(400, gin.H{
 				"error":   true,
-				"message": "name or type or endtime or starttime can't be empty",
+				"message": "name or type or endtime or starttime or description can't be empty",
 			})
 			return
 		}
@@ -382,7 +383,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
-		result, err := db.Exec("INSERT INTO EVENTS (Name, Type, EndTime, StartTime, isInternal, isPrivate, group_display_order, DefaultPicture, Id_EVENTS_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsPrivate, 0, 1)
+		result, err := db.Exec("INSERT INTO EVENTS (Name, Description, Type, EndTime, StartTime, isInternal, isPrivate, group_display_order, DefaultPicture, Id_EVENTS_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Description, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsPrivate, 0, 1)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -624,6 +625,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 
 		type EventReq struct {
 			Name           string `json:"name"`
+			Description	string `json:"description"`
 			Type           string `json:"type"`
 			EndTime        string `json:"endtime"`
 			IsClosed       int    `json:"isclosed"`
@@ -700,6 +702,24 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 			setClause = append(setClause, "name = '"+event.Name+"'")
+		}
+
+		if event.Description != "" {
+			if !utils.IsSafeString(event.Description) {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "description can't contain sql injection",
+				})
+				return
+			}
+			if len(event.Description) < 0 {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "wrong description length",
+				})
+				return
+			}
+			setClause = append(setClause, "description = '"+event.Description+"'")
 		}
 
 		if event.Type != "" {
@@ -1236,6 +1256,8 @@ func GetClientsByEventID(tokenAPI string) func(c *gin.Context) {
 		type ClientReq struct {
 			IdUser string `json:"iduser"`
 			Email  string `json:"email"`
+			FirstName  string `json:"firstname"`
+			LastName string `json:"lastname"`
 			IdClient string `json:"idclient"`
 			IsPresent int `json:"ispresent"`
 		}
@@ -1317,7 +1339,7 @@ func GetClientsByEventID(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
-			err = db.QueryRow("SELECT email FROM USERS WHERE Id_USERS = '" + client.IdUser + "'").Scan(&client.Email)
+			err = db.QueryRow("SELECT email, firstname, lastname FROM USERS WHERE Id_USERS = '" + client.IdUser + "'").Scan(&client.Email, &client.FirstName, &client.LastName)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
@@ -2745,7 +2767,7 @@ func SearchForEvents(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -2762,5 +2784,240 @@ func SearchForEvents(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
+func GetRateByEventID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
 
+		type Rate struct {
+			Grade float64 `json:"grade"`
+			Id string `json:"id"`
+		}
 
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var rate Rate
+
+		err = db.QueryRow("SELECT AVG(grade) AS average_grade FROM EVENTS JOIN COMMENTS ON EVENTS.Id_EVENTS = COMMENTS.Id_EVENTS WHERE EVENTS.Id_EVENTS = '" + id + "'").Scan(&rate.Grade)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		rate.Id = id
+
+		c.JSON(200, rate)
+		return
+	}
+}
+
+func GetEventComments(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Comment struct {
+			IdComment int `json:"idcomment"`
+			IdUser int `json:"iduser"`
+			Grade float64 `json:"grade"`
+			Content string `json:"content"`
+			Picture string `json:"picture"`
+			Firstname string `json:"firstname"`
+			Lastname string `json:"lastname"`
+			ProfilePicture string `json:"profilepicture"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT COMMENTS.Id_COMMENTS, COMMENTS.grade, COMMENTS.picture, COMMENTS.content, USERS.firstname, USERS.lastname, USERS.profilePicture, USERS.Id_USERS FROM COMMENTS JOIN CLIENTS ON CLIENTS.Id_CLIENTS = COMMENTS.Id_CLIENTS JOIN USERS ON USERS.Id_USERS = CLIENTS.Id_USERS WHERE COMMENTS.Id_EVENTS = '" + id + "'")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var comments []Comment
+
+		for rows.Next() {
+			var comment Comment
+			err = rows.Scan(&comment.IdComment, &comment.Grade, &comment.Picture, &comment.Content, &comment.Firstname, &comment.Lastname, &comment.ProfilePicture, &comment.IdUser)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "comment not found",
+				})
+				return
+			}
+			comments = append(comments, comment)
+		}
+
+		c.JSON(200, comments)
+		return
+	}
+}
+
+func GetComingEventByClientIdfunc(tokenAPI string) func (c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT e.Id_EVENTS, e.name, e.description, e.type, e.endTime, e.isClosed, e.startTime, e.isInternal, e.isPrivate, e.group_display_order, e.defaultPicture, e.Id_EVENTS_GROUPS FROM EVENTS e JOIN PARTICIPATES p ON e.Id_EVENTS = p.Id_EVENTS WHERE p.Id_CLIENTS = " + id + " AND e.startTime > NOW();")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "events not found",
+			})
+			return
+		}
+
+		var events []Event
+
+		for rows.Next() {
+			var event Event
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "events not found",
+				})
+				return
+			}
+			events = append(events, event)
+		}
+
+		c.JSON(200, events)
+		return
+	}
+}

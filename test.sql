@@ -36,10 +36,10 @@ CREATE TABLE SUBSCRIPTIONS(
    price DECIMAL(19,4),
    max_lesson_access INT,
    picture VARCHAR(50)  DEFAULT 'default.png',
+   allowRoomBooking BOOLEAN DEFAULT FALSE,
+   allowShopReduction BOOLEAN DEFAULT FALSE,
+   allowChat BOOLEAN DEFAULT FALSE,
    description TEXT,
-   allowRoomBooking BOOLEAN DEFAULT false,
-   allowShopReduction BOOLEAN DEFAULT false,
-   allowChat BOOLEAN DEFAULT false,
    PRIMARY KEY(Id_SUBSCRIPTIONS),
    UNIQUE(name)
 );
@@ -179,6 +179,7 @@ CREATE TABLE CONTRACTORS(
 CREATE TABLE EVENTS(
    Id_EVENTS INT AUTO_INCREMENT,
    name VARCHAR(100)  NOT NULL,
+   description TEXT DEFAULT "This is my event description",
    type VARCHAR(50) ,
    endTime DATETIME,
    isClosed BOOLEAN DEFAULT FALSE,
@@ -240,7 +241,6 @@ CREATE TABLE BILLS(
    createdAt DATETIME NOT NULL DEFAULT NOW(),
    Id_USERS INT NOT NULL,
    PRIMARY KEY(Id_BILLS),
-   UNIQUE(name),
    FOREIGN KEY(Id_USERS) REFERENCES USERS(Id_USERS)
 );
 

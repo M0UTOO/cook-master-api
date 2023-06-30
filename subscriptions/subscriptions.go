@@ -17,10 +17,10 @@ type Subscription struct {
 	Price float64 `json:"price"`
 	MaxLessonAccess int `json:"maxlessonaccess"`
 	Picture string `json:"picture"`
-	Description string `json:"description"`
 	AllowRoomBooking bool `json:"allowroombooking"`
 	AllowShopReduction bool `json:"allowshoreduction"`
 	AllowChat bool `json:"allowchat"`
+	Description string `json:"description"`
 }
 
 func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
@@ -67,7 +67,7 @@ func GetSubscriptions(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var subscription Subscription
-			err := rows.Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description, &subscription.AllowRoomBooking, &subscription.AllowShopReduction, &subscription.AllowChat)
+			err := rows.Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.AllowRoomBooking, &subscription.AllowShopReduction, &subscription.AllowChat, &subscription.Description)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
@@ -130,8 +130,9 @@ func GetSubscriptionByID(tokenAPI string) func(c *gin.Context) {
 
 		var subscription Subscription
 
-		err = db.QueryRow("SELECT * FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + id).Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.Description, &subscription.AllowRoomBooking, &subscription.AllowShopReduction, &subscription.AllowChat)
+		err = db.QueryRow("SELECT * FROM SUBSCRIPTIONS WHERE Id_SUBSCRIPTIONS = " + id).Scan(&subscription.IdSubscription, &subscription.Name, &subscription.Price, &subscription.MaxLessonAccess, &subscription.Picture, &subscription.AllowRoomBooking, &subscription.AllowShopReduction, &subscription.AllowChat, &subscription.Description)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "subscription not found",

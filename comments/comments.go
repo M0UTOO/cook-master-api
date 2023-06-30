@@ -21,6 +21,68 @@ type Comment struct {
 	IdEvent int `json:"idevent"`
 }
 
+func GetCommentByCommentID(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		id := c.Param("id")
+		if id == ""{
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id){
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		var comment Comment
+
+		err = db.QueryRow("SELECT * FROM COMMENTS WHERE Id_COMMENTS = '" + id + "'").Scan(&comment.IdComment, &comment.Grade, &comment.Content, &comment.Picture, &comment.IdClient, &comment.IdEvent)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "comment doesn't exist",
+			})
+			return
+		}
+
+		c.JSON(200, comment)
+	}
+}
+
 func GetCommentsByClientID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
@@ -252,7 +314,7 @@ func PostComment(tokenAPI string) func(c *gin.Context) {
 
 		var id int
 
-		err = db.QueryRow("SELECT Id_USERS FROM CLIENTS WHERE Id_USERS = '" + strconv.Itoa(comment.IdClient) + "'").Scan(&id)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_CLIENTS = '" + strconv.Itoa(comment.IdClient) + "'").Scan(&id)
 		if err != nil {
 			c.JSON(400, gin.H{
 				"error":   true,

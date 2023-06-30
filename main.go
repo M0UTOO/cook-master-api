@@ -84,7 +84,7 @@ func main() {
 	event.GET("/participate/:idevent", events.GetClientsByEventID(tokenAPI))                      		// WORKING
 	event.GET("/groups/:idevent", events.GetGroupsByEventID(tokenAPI))                             		// WORKING
 	event.GET("/host/:idevent", events.GetCookingSpacesByEventID(tokenAPI))                       		// WORKING
-	event.GET("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              		// WORKING
+	event.POST("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              		// WORKING
 	event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI))      		// WORKING
 	event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        		// WORKING
 	event.PATCH("/host/:idevent/:idcookingspace", events.AddEventToAnCookingSpace(tokenAPI))     		// WORKING
@@ -98,6 +98,9 @@ func main() {
 	event.GET("/top5", events.GetTop5Events(tokenAPI)) // WORKING
 	event.GET("/formation", events.GetFormationsDone(tokenAPI)) // WORKING
 	event.POST("/search/:search", events.SearchForEvents(tokenAPI)) // WORKING
+	event.GET("/rate/:id", events.GetRateByEventID(tokenAPI)) // WORKING
+	event.GET("/comment/:id", events.GetEventComments(tokenAPI)) // WORKING
+	event.GET("/coming/:id", events.GetComingEventByClientIdfunc(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING
@@ -165,6 +168,7 @@ func main() {
 	shopitem.DELETE("/:id", shopitems.DeleteShopItem(tokenAPI)) // WORKING
 	shopitem.PATCH("/:id", shopitems.UpdateShopItem(tokenAPI))  // WORKING
 	comment := r.Group("/comment")
+	comment.GET("/:id", comments.GetCommentByCommentID(tokenAPI))   // WORKING
 	comment.GET("/event/:id", comments.GetCommentsByEventID(tokenAPI))   // WORKING
 	comment.GET("/client/:id", comments.GetCommentsByClientID(tokenAPI))   // WORKING
 	comment.POST("/", comments.PostComment(tokenAPI))        // WORKING

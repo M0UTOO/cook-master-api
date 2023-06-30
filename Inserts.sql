@@ -775,11 +775,11 @@ insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInter
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (198, 'etarsdzdarrt', 'Teaching Session', '2021-03-11 00:17:54', false, '2020-11-18 01:26:02', true, true, 4, 'default.png', 5);
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (199, 'posuqsdqsdere metus vitae', 'Training', '2022-12-03 22:57:54', true, '2021-07-27 18:50:23', true, false, 6, 'default.png', 5);
 insert into EVENTS (Id_EVENTS, name, type, endTime, isClosed, startTime, isInternal, isPrivate, group_display_order, defaultPicture, Id_EVENTS_GROUPS) values (200, 'in bzeazealandit', 'Teaching Session', '2020-06-02 18:31:16', false, '2023-02-14 07:39:48', false, true, 4, 'default.png', 2);
-insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (1, 'Deer, swamp', 30, true, 19.84, 10);
-insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (2, 'Egyptian goose', 96, true, 18.71, 8);
+insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (1, 'Deer, swamp', 30, true, 19.84, 2);
+insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (2, 'Egyptian goose', 96, true, 18.71, 3);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (3, 'Red meerkat', 55, false, 15.44, 3);
-insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (4, 'Lion, steller''s sea', 30, true, 4.4, 9);
-insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (5, 'Sea Food Restaurant', 54, true, 5.09, 10);
+insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (4, 'Lion, steller''s sea', 30, true, 4.4, 1);
+insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (5, 'Sea Food Restaurant', 54, true, 5.09, 1);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (6, 'Lemur, sportive', 20, false, 12.53, 3);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (7, 'Bare-faced go away bird', 52, false, 18.26, 1);
 insert into COOKING_SPACES (Id_COOKING_SPACES, name, size, isAvailable, PricePerHour, Id_PREMISES) values (8, 'Magellanic penguin', 58, false, 13.32, 1);
