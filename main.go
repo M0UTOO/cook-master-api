@@ -214,7 +214,10 @@ func main() {
 	//conversation.GET("/:id", conversations.GetConversationByID(tokenAPI))
 	//conversation.GET("/user/:id", conversations.GetConversationForUserID(tokenAPI))
 	//conversation.POST("/message", conversations.PostMessage(tokenAPI))
-	r.Run(":9000")
+
+	//USE HTTPS AND ENABLE HTTP/2
+	r.Run(":9000") //USE THIS IN LOCAL
+	//r.RunTLS(":9000","/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem") //USE THIS IN PRODUCTION
 }
 
 func index(c *gin.Context) {
