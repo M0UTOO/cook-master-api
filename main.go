@@ -28,12 +28,12 @@ import (
 
 func main() {
 	tokenAPI := token.GetAPIToken()
-	gin.SetMode(gin.ReleaseMode)
+	//gin.SetMode(gin.ReleaseMode)
 	secureFunc := func() gin.HandlerFunc {
 		return func(c *gin.Context) {
 			secureMiddleware := secure.New(secure.Options{
 				SSLRedirect: true,
-				SSLHost:     "api.becomeacookmaster.live:443",
+				SSLHost:     "api.becomeacookmaster.live:9001",
 			})
 			err := secureMiddleware.Process(c.Writer, c.Request)
 
@@ -232,7 +232,7 @@ func main() {
 	//conversation.GET("/user/:id", conversations.GetConversationForUserID(tokenAPI))
 	//conversation.POST("/message", conversations.PostMessage(tokenAPI))
 	go r.Run(":9000")
-	r.RunTLS(":443", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
+	r.RunTLS(":9001", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
 }
 
 func index(c *gin.Context) {
