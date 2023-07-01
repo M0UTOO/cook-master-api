@@ -18,7 +18,12 @@
 *.yml 
 */*.yml
 
+# Shell scripts
+*.sh
+
 # VsCode Config
 .vscode
 
 token/token.go
+cook-master-api
+dump.sql

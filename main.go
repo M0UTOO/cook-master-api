@@ -17,20 +17,37 @@ import (
 	"cook-master-api/bills"
 	"cook-master-api/token"
 	"cook-master-api/users"
-	"cook-master-api/utils"
+	//"cook-master-api/utils"
 	"cook-master-api/languages"
 
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
+	"github.com/unrolled/secure"
 )
 
 func main() {
 	tokenAPI := token.GetAPIToken()
 	gin.SetMode(gin.ReleaseMode)
+	secureFunc := func() gin.HandlerFunc {
+		return func(c *gin.Context) {
+			secureMiddleware := secure.New(secure.Options{
+				SSLRedirect: true,
+				SSLHost:     "api.becomeacookmaster.live:443",
+			})
+			err := secureMiddleware.Process(c.Writer, c.Request)
+
+			// If there was an error, do not continue.
+			if err != nil {
+				return
+			}
+
+			c.Next()
+		}
+	}()
 	r := gin.Default()
+	r.Use(secureFunc)
 	r.GET("/", index)
-	r.Use(utils.CorsMiddleware())
 	user := r.Group("/user")
 	user.GET("/:id", users.GetUserByID(tokenAPI))                										// WORKING
 	user.GET("/search/:filter", users.GetUserByFilter(tokenAPI)) 										// WORKING
@@ -214,7 +231,8 @@ func main() {
 	//conversation.GET("/:id", conversations.GetConversationByID(tokenAPI))
 	//conversation.GET("/user/:id", conversations.GetConversationForUserID(tokenAPI))
 	//conversation.POST("/message", conversations.PostMessage(tokenAPI))
-	r.Run(":9000")
+	go r.Run(":9000")
+	r.RunTLS(":443", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
 }
 
 func index(c *gin.Context) {
