@@ -27,3 +27,5 @@
 token/token.go
 cook-master-api
 dump.sql
+
+local_main.go
