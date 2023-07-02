@@ -23,30 +23,30 @@ import (
 	//"cook-master-api/conversations"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
-	"github.com/unrolled/secure"
+	// "github.com/unrolled/secure"
 )
 
 func main() {
 	tokenAPI := token.GetAPIToken()
-	gin.SetMode(gin.ReleaseMode)
-	secureFunc := func() gin.HandlerFunc {
-		return func(c *gin.Context) {
-			secureMiddleware := secure.New(secure.Options{
-				SSLRedirect: true,
-				SSLHost:     "api.becomeacookmaster.live:9000",
-			})
-			err := secureMiddleware.Process(c.Writer, c.Request)
+	//gin.SetMode(gin.ReleaseMode)
+	// secureFunc := func() gin.HandlerFunc {
+	// 	return func(c *gin.Context) {
+	// 		secureMiddleware := secure.New(secure.Options{
+	// 			SSLRedirect: true,
+	// 			SSLHost:     "api.becomeacookmaster.live:9000",
+	// 		})
+	// 		err := secureMiddleware.Process(c.Writer, c.Request)
 
-			// If there was an error, do not continue.
-			if err != nil {
-				return
-			}
+	// 		// If there was an error, do not continue.
+	// 		if err != nil {
+	// 			return
+	// 		}
 
-			c.Next()
-		}
-	}()
+	// 		c.Next()
+	// 	}
+	// }()
 	r := gin.Default()
-	r.Use(secureFunc)
+	// r.Use(secureFunc)
 	r.GET("/", index)
 	user := r.Group("/user")
 	user.GET("/:id", users.GetUserByID(tokenAPI))                										// WORKING
@@ -118,6 +118,7 @@ func main() {
 	event.GET("/rate/:id", events.GetRateByEventID(tokenAPI)) // WORKING
 	event.GET("/comment/:id", events.GetEventComments(tokenAPI)) // WORKING
 	event.GET("/coming/:id", events.GetComingEventByClientIdfunc(tokenAPI)) // WORKING
+	event.GET("/past/:id", events.GetPastEventByClientIdfunc(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING
@@ -231,8 +232,8 @@ func main() {
 	//conversation.GET("/:id", conversations.GetConversationByID(tokenAPI))
 	//conversation.GET("/user/:id", conversations.GetConversationForUserID(tokenAPI))
 	//conversation.POST("/message", conversations.PostMessage(tokenAPI))
-	go r.Run(":9001")
-	r.RunTLS(":9000", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
+	r.Run(":9000")
+	//r.RunTLS(":9000", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
 }
 
 func index(c *gin.Context) {
