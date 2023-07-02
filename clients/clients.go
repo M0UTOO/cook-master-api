@@ -507,7 +507,7 @@ func WatchLesson(tokenAPI string) func(c *gin.Context) {
 
 		var watches string
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM WATCHES WHERE Id_LESSONS = '" + idLesson + "' AND Id_CLIENTS = '" + idClient + "'").Scan(&watches)
+		err = db.QueryRow("SELECT Id_CLIENTS FROM WATCHES WHERE Id_LESSONS = '" + idLesson + "' AND Id_CLIENTS = '" + idclient + "'").Scan(&watches)
 		if err == nil {
 			c.JSON(400, gin.H{
 				"error":   true,
@@ -516,7 +516,7 @@ func WatchLesson(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		_, err = db.Exec("INSERT INTO WATCHES (Id_CLIENTS, Id_LESSONS, dateTime) VALUES (?, ?, DEFAULT)", idlesson, idclient)
+		_, err = db.Exec("INSERT INTO WATCHES (Id_CLIENTS, Id_LESSONS, dateTime) VALUES (?, ?, DEFAULT)", idclient, idlesson)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
