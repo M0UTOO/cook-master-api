@@ -901,8 +901,7 @@ func LoginUser(tokenAPI string) func(c *gin.Context) {
 		var idEntity int
 		var idSub int
 
-		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&idEntity)
-		err = db.QueryRow("SELECT Id_SUBSCRIPTIONS FROM IS_SUBSCRIBED WHERE Id_CLIENTS = '" + strconv.Itoa(idEntity) + "'").Scan(&idSub)
+		err = db.QueryRow("SELECT Id_CLIENTS, subscription FROM CLIENTS WHERE Id_USERS = (SELECT Id_USERS FROM USERS WHERE Email = '" + login.Email + "' AND Password = '" + login.Password + "')").Scan(&idEntity, &idSub)
 		if err == nil {
 			c.JSON(200, gin.H{
 				"error": false,
