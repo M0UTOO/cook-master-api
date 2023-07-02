@@ -119,6 +119,7 @@ func main() {
 	event.GET("/comment/:id", events.GetEventComments(tokenAPI)) // WORKING
 	event.GET("/coming/:id", events.GetComingEventByClientIdfunc(tokenAPI)) // WORKING
 	event.GET("/past/:id", events.GetPastEventByClientIdfunc(tokenAPI)) // WORKING
+	event.DELETE("/:id", events.DeleteEvent(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING

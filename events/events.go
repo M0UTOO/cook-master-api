@@ -277,7 +277,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Description, &event.Name, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -677,6 +677,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 
 		err = c.BindJSON(&event)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(400, gin.H{
 				"error":   true,
 				"message": "cannot bind json",
@@ -795,7 +796,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 				})
 				return
 			}
-			setClause = append(setClause, "default_picture = '"+event.DefaultPicture+"'")
+			setClause = append(setClause, "defaultPicture = '"+event.DefaultPicture+"'")
 		}
 
 		if len(setClause) == 0 {
@@ -2839,12 +2840,7 @@ func GetRateByEventID(tokenAPI string) func(c *gin.Context) {
 
 		err = db.QueryRow("SELECT AVG(grade) AS average_grade FROM EVENTS JOIN COMMENTS ON EVENTS.Id_EVENTS = COMMENTS.Id_EVENTS WHERE EVENTS.Id_EVENTS = '" + id + "'").Scan(&rate.Grade)
 		if err != nil {
-			fmt.Println(err)
-			c.JSON(500, gin.H{
-				"error":   true,
-				"message": "month not found",
-			})
-			return
+			rate.Grade = 0
 		}
 
 		rate.Id = id
@@ -3120,5 +3116,170 @@ func GetPastEventByClientIdfunc(tokenAPI string) func (c *gin.Context) {
 
 		c.JSON(200, events)
 		return
+	}
+}
+
+func DeleteEvent(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idevent string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + id + "'").Scan(&idevent)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var animate string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM ANIMATES WHERE Id_EVENTS = '" + id + "'").Scan(&animate)
+		if err == nil {
+			_, err = db.Exec("DELETE FROM ANIMATES WHERE Id_EVENTS = '" + id + "'")
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot delete animates",
+				})
+				return
+			}
+		}
+
+		var ishosted string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM IS_HOSTED WHERE Id_EVENTS = '" + id + "'").Scan(&ishosted)
+		if err == nil {
+			_, err = db.Exec("DELETE FROM IS_HOSTED WHERE Id_EVENTS = '" + id + "'")
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot delete is_hosted",
+				})
+				return
+			}
+		}
+
+		var organize string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM ORGANIZES WHERE Id_EVENTS = '" + id + "'").Scan(&organize)
+		if err == nil {
+			_, err = db.Exec("DELETE FROM ORGANIZES WHERE Id_EVENTS = '" + id + "'")
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot delete organizes",
+				})
+				return
+			}
+		}
+
+		rows, err := db.Query("SELECT Id_EVENTS FROM PARTICIPATES WHERE Id_EVENTS = '" + id + "'")
+		if err == nil {
+			for rows.Next() {
+				var participate string
+				err = rows.Scan(&participate)
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "err on scan rows",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM PARTICIPATES WHERE Id_EVENTS = '" + id + "'")
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "cannot delete participate",
+					})
+					return
+				}
+			}
+		}
+
+		rows, err = db.Query("SELECT Id_EVENTS FROM COMMENTS WHERE Id_EVENTS = '" + id + "'")
+		if err == nil {
+			for rows.Next() {
+				var comment string
+				err = rows.Scan(&comment)
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "err on scan rows",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM COMMENTS WHERE Id_EVENTS = '" + id + "'")
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "cannot delete comment",
+					})
+					return
+				}
+			}
+		}
+
+		_, err = db.Exec("DELETE FROM EVENTS WHERE Id_EVENTS = '" + id + "'")
+		fmt.Println(err)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot delete ishosted",
+			})
+			return
+		}
+
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "event deleted",
+		})
 	}
 }
