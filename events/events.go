@@ -464,6 +464,8 @@ func AddEventToAGroup(tokenAPI string) func(c *gin.Context) {
 		var group Group
 		c.BindJSON(&group)
 
+		fmt.Println(group)
+
 		if group.Name != "" {
 			if !utils.IsSafeString(group.Name) {
 				c.JSON(400, gin.H{
@@ -3281,5 +3283,69 @@ func DeleteEvent(tokenAPI string) func(c *gin.Context) {
 			"error":   false,
 			"message": "event deleted",
 		})
+	}
+}
+
+func SearchForEventsGroups(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		search := c.Param("search")
+		if search == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "search can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(search) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "search can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var eventGroup EventGroup
+
+		err = db.QueryRow("SELECT * FROM EVENTS_GROUPS WHERE name = '" + search + "';").Scan(&eventGroup.IdEvent, &eventGroup.Name)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "groups not found",
+			})
+			return
+		}
+
+		c.JSON(200, eventGroup)
+		return
 	}
 }

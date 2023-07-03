@@ -17,7 +17,7 @@ import (
 	"cook-master-api/bills"
 	"cook-master-api/token"
 	"cook-master-api/users"
-	//"cook-master-api/utils"
+	"cook-master-api/utils"
 	"cook-master-api/languages"
 
 	//"cook-master-api/conversations"
@@ -46,6 +46,7 @@ func main() {
 	// 	}
 	// }()
 	r := gin.Default()
+	r.Use(utils.CorsMiddleware())
 	// r.Use(secureFunc)
 	r.GET("/", index)
 	user := r.Group("/user")
@@ -120,6 +121,7 @@ func main() {
 	event.GET("/coming/:id", events.GetComingEventByClientIdfunc(tokenAPI)) // WORKING
 	event.GET("/past/:id", events.GetPastEventByClientIdfunc(tokenAPI)) // WORKING
 	event.DELETE("/:id", events.DeleteEvent(tokenAPI)) // WORKING
+	event.GET("/group/search/:search", events.SearchForEventsGroups(tokenAPI)) // WORKING")
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING
