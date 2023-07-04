@@ -83,8 +83,20 @@ func GetCommentByCommentID(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
-func GetCommentsByClientID(tokenAPI string) func(c *gin.Context) {
+func GetCommentsByUserID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
+
+		type CommentReq struct {
+			IdComment int `json:"idcomment"`
+			IdUser int `json:"iduser"`
+			IdEvent int `json:"idevent"`
+			Grade float64 `json:"grade"`
+			Content string `json:"content"`
+			Picture string `json:"picture"`
+			Firstname string `json:"firstname"`
+			Lastname string `json:"lastname"`
+			ProfilePicture string `json:"profilepicture"`
+		}
 
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil {
@@ -130,19 +142,31 @@ func GetCommentsByClientID(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		rows, err := db.Query("SELECT * FROM COMMENTS WHERE ID_CLIENTS = ?", id)
+		var idClient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + id + "'").Scan(&idClient)
 		if err != nil {
-			c.JSON(500, gin.H{
+			c.JSON(400, gin.H{
 				"error":   true,
-				"message": "can't query database",
+				"message": "client doesn't exist",
 			})
 			return
 		}
 
-		var comments []Comment
+		rows, err := db.Query("SELECT COMMENTS.Id_COMMENTS, COMMENTS.Id_EVENTS, COMMENTS.grade, COMMENTS.picture, COMMENTS.content, USERS.firstname, USERS.lastname, USERS.profilePicture, USERS.Id_USERS FROM COMMENTS JOIN CLIENTS ON CLIENTS.Id_CLIENTS = COMMENTS.Id_CLIENTS JOIN USERS ON USERS.Id_USERS = CLIENTS.Id_USERS WHERE CLIENTS.Id_CLIENTS = '" + idClient + "'")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "month not found",
+			})
+			return
+		}
+
+		var comments []CommentReq
 		for rows.Next() {
-			var comment Comment
-			err = rows.Scan(&comment.IdComment, &comment.Grade, &comment.Content, &comment.Picture, &comment.IdClient, &comment.IdEvent)
+			var comment CommentReq
+			err = rows.Scan(&comment.IdComment, &comment.IdEvent, &comment.Grade, &comment.Picture, &comment.Content, &comment.Firstname, &comment.Lastname, &comment.ProfilePicture, &comment.IdUser)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,

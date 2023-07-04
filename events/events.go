@@ -2941,7 +2941,7 @@ func GetEventComments(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
-func GetComingEventByClientIdfunc(tokenAPI string) func (c *gin.Context) {
+func GetComingEventByClientId(tokenAPI string) func (c *gin.Context) {
 	return func(c *gin.Context) {
 		tokenHeader := c.Request.Header["Token"]
 

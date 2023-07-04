@@ -119,7 +119,7 @@ func main() {
 	event.POST("/search/:search", events.SearchForEvents(tokenAPI)) // WORKING
 	event.GET("/rate/:id", events.GetRateByEventID(tokenAPI)) // WORKING
 	event.GET("/comment/:id", events.GetEventComments(tokenAPI)) // WORKING
-	event.GET("/coming/:id", events.GetComingEventByClientIdfunc(tokenAPI)) // WORKING
+	event.GET("/coming/:id", events.GetComingEventByClientId(tokenAPI)) // WORKING
 	event.GET("/past/:id", events.GetPastEventByClientIdfunc(tokenAPI)) // WORKING
 	event.DELETE("/:id", events.DeleteEvent(tokenAPI)) // WORKING
 	event.GET("/group/search/:search", events.SearchForEventsGroups(tokenAPI)) // WORKING
@@ -194,7 +194,7 @@ func main() {
 	comment := r.Group("/comment")
 	comment.GET("/:id", comments.GetCommentByCommentID(tokenAPI))   // WORKING
 	comment.GET("/event/:id", comments.GetCommentsByEventID(tokenAPI))   // WORKING
-	comment.GET("/client/:id", comments.GetCommentsByClientID(tokenAPI))   // WORKING
+	comment.GET("/client/:id", comments.GetCommentsByUserID(tokenAPI))   // WORKING
 	comment.POST("/", comments.PostComment(tokenAPI))        // WORKING
 	comment.DELETE("/:id", comments.DeleteComment(tokenAPI)) // WORKING
 	comment.PATCH("/:id", comments.UpdateComment(tokenAPI))  // WORKING
