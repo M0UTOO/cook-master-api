@@ -104,7 +104,8 @@ func main() {
 	event.GET("/host/:idevent", events.GetCookingSpacesByEventID(tokenAPI))                       		// WORKING
 	event.POST("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              		// WORKING
 	event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI))      		// WORKING
-	event.PATCH("/participate/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        		// WORKING
+	event.PATCH("/participation/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        		// WORKING
+	event.DELETE("/participation/:idevent/:iduser", events.UnvalidateClientPresence(tokenAPI))        		// WORKING
 	event.PATCH("/host/:idevent/:idcookingspace", events.AddEventToAnCookingSpace(tokenAPI))     		// WORKING
 	event.DELETE("/host/:idevent/:idcookingspace", events.DeleteEventToAnCookingSpace(tokenAPI)) 		// WORKING
 	event.GET("/group/all", events.GetGroupEvents(tokenAPI)) 											// WORKING
@@ -121,7 +122,9 @@ func main() {
 	event.GET("/coming/:id", events.GetComingEventByClientIdfunc(tokenAPI)) // WORKING
 	event.GET("/past/:id", events.GetPastEventByClientIdfunc(tokenAPI)) // WORKING
 	event.DELETE("/:id", events.DeleteEvent(tokenAPI)) // WORKING
-	event.GET("/group/search/:search", events.SearchForEventsGroups(tokenAPI)) // WORKING")
+	event.GET("/group/search/:search", events.SearchForEventsGroups(tokenAPI)) // WORKING
+	event.GET("/animate/get/:id", events.GetEventsByUserId(tokenAPI)) // WORKING
+	event.GET("/ispresent/:idevent/:idclient", events.GetClientParticipationToEvent(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING

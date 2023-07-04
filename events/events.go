@@ -3349,3 +3349,358 @@ func SearchForEventsGroups(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetEventsByUserId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idcontractor string
+
+		err = db.QueryRow("SELECT Id_CONTRACTORS FROM CONTRACTORS WHERE Id_USERS = '" + id + "';").Scan(&idcontractor)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "contractor not found",
+			})
+			return
+		}
+
+		rows, err := db.Query("SELECT EVENTS.Id_EVENTS, EVENTS.Name, EVENTS.Description, EVENTS.Type, EVENTS.Endtime, EVENTS.IsClosed, EVENTS.Starttime, EVENTS.IsInternal, EVENTS.IsPrivate, EVENTS.Group_Display_Order, EVENTS.defaultPicture, EVENTS.Id_EVENTS_GROUPS FROM EVENTS JOIN ANIMATES ON EVENTS.Id_EVENTS = ANIMATES.Id_EVENTS WHERE Id_CONTRACTORS = '" + idcontractor + "';")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "events not found",
+			})
+			return
+		}
+
+		var events []Event
+
+		for rows.Next() {
+			var event Event
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "events not found",
+				})
+				return
+			}
+			events = append(events, event)
+		}
+
+		c.JSON(200, events)
+		return
+	}
+}
+
+func GetClientParticipationToEvent(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idclient := c.Param("idclient")
+		if idclient == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idclient can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idclient) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idclient can't contain sql injection",
+			})
+			return
+		}
+
+		idevent := c.Param("idevent")
+		if idevent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idevent can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idevent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "idevent can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var verifclient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_CLIENTS = '" + idclient + "';").Scan(&verifclient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "client not found",
+			})
+			return
+		}
+
+		var verifevent string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idevent + "';").Scan(&verifevent)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		type IsPresent struct {
+			IsPresent int `json:"ispresent"`
+		}
+
+		var isPresent IsPresent
+
+		err = db.QueryRow("SELECT isPresent FROM PARTICIPATES WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS = '" + idevent + "';").Scan(&isPresent.IsPresent)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "participation not found",
+			})
+			return
+		}
+
+		c.JSON(200, isPresent)
+		return
+	}
+}
+
+func UnvalidateClientPresence(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idEvent := c.Param("idevent")
+		if idEvent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idEvent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		iduser := c.Param("iduser")
+		if iduser == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id client can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(iduser) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id client can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idevent string
+
+		err = db.QueryRow("SELECT Id_EVENTS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idevent)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var idclient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + iduser + "'").Scan(&idclient)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "client not found",
+			})
+			return
+		}
+
+		var ispresent bool
+
+		err = db.QueryRow("SELECT IsPresent FROM PARTICIPATES WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS = '" + idevent + "'").Scan(&ispresent)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "client not added to event",
+			})
+			return
+		}
+
+		if ispresent == false{
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "client not validated",
+			})
+			return
+		}
+
+		_, err = db.Exec("UPDATE PARTICIPATES SET IsPresent = ? WHERE Id_CLIENTS = '"+idclient+"' AND Id_EVENTS = '"+idevent+"'", false)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot update participates",
+			})
+			return
+		}
+
+		var idgroup string
+
+		err = db.QueryRow("SELECT Id_EVENTS_GROUPS FROM EVENTS WHERE Id_EVENTS = '" + idEvent + "'").Scan(&idgroup)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "client not added to event",
+			})
+			return
+		}
+
+		if idgroup != "1" && idgroup != "0"{
+
+			var isformation int
+
+			err = db.QueryRow("SELECT Id_CLIENTS FROM FORMATIONS WHERE Id_CLIENTS = '" + idclient + "' AND Id_EVENTS_GROUPS = '" + idgroup + "'").Scan(&isformation)
+			if err != nil {
+				c.JSON(400, gin.H{
+					"error":   true,
+					"message": "client not added to event",
+				})
+				return
+
+			} else {
+				_, err = db.Exec("UPDATE FORMATIONS SET counter = counter - 1 WHERE Id_CLIENTS = '"+idclient+"' AND Id_EVENTS_GROUPS = '"+idgroup+"'")
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error":   true,
+						"message": "cannot update formations",
+					})
+					return
+				}
+			}
+		}
+			
+		c.JSON(200, gin.H{
+			"error":   false,
+			"message": "client presence deleted",
+		})
+	}
+}
