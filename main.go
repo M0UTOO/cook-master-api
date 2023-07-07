@@ -76,6 +76,7 @@ func main() {
 	contractor.POST("/type", contractors.AddAContractorType(tokenAPI)) 									// WORKING
 	contractor.DELETE("/type/:id", contractors.DeleteAContractorType(tokenAPI)) 						// WORKING
 	contractor.GET("/type", contractors.GetContractorTypes(tokenAPI)) 									// WORKING
+	contractor.GET("/role/:search", contractors.GetContractorByRoles(tokenAPI))
 	manager := r.Group("/manager")
 	manager.GET("/all", managers.GetManagers(tokenAPI))      											// WORKING
 	manager.GET("/:id", managers.GetManagerByID(tokenAPI))   											// WORKING
