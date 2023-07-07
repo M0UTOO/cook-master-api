@@ -19,8 +19,7 @@ import (
 	"cook-master-api/users"
 	"cook-master-api/utils"
 	"cook-master-api/languages"
-
-	//"cook-master-api/conversations"
+	"cook-master-api/messages"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
 	// "github.com/unrolled/secure"
@@ -231,13 +230,9 @@ func main() {
 	language.POST("/", languages.PostLanguage(tokenAPI))        // WORKING
 	language.DELETE("/:id", languages.DeleteLanguage(tokenAPI)) // WORKING
 	language.PATCH("/:id", languages.UpdateLanguage(tokenAPI))  // WORKING
-	//conversation := r.Group("/conversations") TO DO AFTER OTHERS TABLES AND RE WORK ON THE MDC
-	//conversation.POST("/", conversations.PostConversations(tokenAPI))
-	//conversation.DELETE("/", conversations.DeleteConversations(tokenAPI))
-	//conversation.GET("/all", conversations.GetConversations(tokenAPI))
-	//conversation.GET("/:id", conversations.GetConversationByID(tokenAPI))
-	//conversation.GET("/user/:id", conversations.GetConversationForUserID(tokenAPI))
-	//conversation.POST("/message", conversations.PostMessage(tokenAPI))
+	message := r.Group("/message")
+	message.GET("/:idsender/:idreceiver", messages.GetMessageForIdSenderAndIdReceiver(tokenAPI))
+	message.POST("/:idsender/:idreceiver", messages.PostMessage(tokenAPI))
 	r.Run(":9000")
 	//r.RunTLS(":9000", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
 }
