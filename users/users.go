@@ -1036,17 +1036,45 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
+			_, err = db.Exec("DELETE FROM BOOKS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client watch",
+				})
+				return
+			}
 			_, err = db.Exec("DELETE FROM PARTICIPATES WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error": true,
-					"message": "cannot delete client participate",
+					"message": "cannot delete client books",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM COMMENTS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client comments",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM ORDERS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client orders",
 				})
 				return
 			}
 
 			_, err = db.Exec("DELETE FROM CLIENTS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "cannot delete client",
@@ -1153,6 +1181,7 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 
 		c.JSON(200, gin.H{
 			"error": false,
+			"id": id,
 			"message": "user deleted",
 		})
 		return
