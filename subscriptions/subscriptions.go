@@ -18,7 +18,7 @@ type Subscription struct {
 	MaxLessonAccess int `json:"maxlessonaccess"`
 	Picture string `json:"picture"`
 	AllowRoomBooking bool `json:"allowroombooking"`
-	AllowShopReduction bool `json:"allowshoreduction"`
+	AllowShopReduction bool `json:"allowshopreduction"`
 	AllowChat bool `json:"allowchat"`
 	Description string `json:"description"`
 }

@@ -125,6 +125,8 @@ func main() {
 	event.GET("/group/search/:search", events.SearchForEventsGroups(tokenAPI)) // WORKING
 	event.GET("/animate/get/:id", events.GetEventsByUserId(tokenAPI)) // WORKING
 	event.GET("/ispresent/:idevent/:idclient", events.GetClientParticipationToEvent(tokenAPI)) // WORKING
+	event.GET("/formation/get/:id", events.GetFomationsForUser(tokenAPI)) // WORKING
+	event.GET("/group/get/:id", events.GetGroupByGroupId(tokenAPI)) // WORKING
 	premise := r.Group("/premise")
 	premise.GET("/all", premises.GetPremises(tokenAPI))      // WORKING
 	premise.GET("/:id", premises.GetPremiseByID(tokenAPI))   // WORKING

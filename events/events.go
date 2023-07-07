@@ -3704,3 +3704,164 @@ func UnvalidateClientPresence(tokenAPI string) func(c *gin.Context) {
 		})
 	}
 }
+
+func GetFomationsForUser(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type FormationReq struct {
+			IdEventGroup string `json:"ideventgroup"`
+			NameEventGroup string `json:"nameeventgroup"`
+			EventCount int `json:"eventcount"`
+			Count int `json:"count"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var verifclient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + id + "';").Scan(&verifclient)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "client not found",
+			})
+			return
+		}
+
+		rows, err := db.Query("SELECT F.Id_EVENTS_GROUPS, EG.name AS event_group_name, COUNT(E.Id_EVENTS) AS event_count, F.counter AS formations_counter FROM EVENTS_GROUPS EG JOIN EVENTS E ON E.Id_EVENTS_GROUPS = EG.Id_EVENTS_GROUPS JOIN FORMATIONS F ON F.Id_EVENTS_GROUPS = EG.Id_EVENTS_GROUPS WHERE F.Id_CLIENTS = '" + verifclient + "' GROUP BY EG.Id_EVENTS_GROUPS;")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "formations not found",
+			})
+			return
+		}
+
+		var formations []FormationReq
+
+		for rows.Next() {
+			var formation FormationReq
+			err = rows.Scan(&formation.IdEventGroup, &formation.NameEventGroup, &formation.EventCount, &formation.Count)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "formations not found",
+				})
+				return
+			}
+			formations = append(formations, formation)
+		}
+
+		c.JSON(200, formations)
+		return
+	}
+}
+
+func GetGroupByGroupId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var eventGroup EventGroup
+
+		err = db.QueryRow("SELECT * FROM EVENTS_GROUPS WHERE Id_EVENTS_GROUPS = '" + id + "';").Scan(&eventGroup.IdEvent, &eventGroup.Name)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "group not found",
+			})
+			return
+		}
+
+		c.JSON(200, eventGroup)
+		return
+	}
+}
