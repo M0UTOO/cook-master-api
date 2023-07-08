@@ -241,6 +241,19 @@ func GetLessonByID(tokenAPI string) func(c *gin.Context) {
 func GetLessonsByGroupID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
 
+		type LessonReq struct {
+			IdLesson          int    `json:"idlesson"`
+			Name              string `json:"name"`
+			Content           string `json:"content"`
+			Description       string `json:"description"`
+			Difficulty        int    `json:"difficulty"`
+			GroupDisplayOrder int    `json:"group_display_order"`
+			Picture 		 string `json:"picture"`
+			IdLessonGroup     int    `json:"idlessongroup"`
+			FirstName		 string `json:"firstname"`
+			LastName		 string `json:"lastname"`
+		}
+
 		tokenHeader := c.Request.Header["Token"]
 		if tokenHeader == nil {
 			c.JSON(498, gin.H{
@@ -285,8 +298,9 @@ func GetLessonsByGroupID(tokenAPI string) func(c *gin.Context) {
 		}
 		defer db.Close()
 
-		rows, err := db.Query("SELECT * FROM LESSONS WHERE Id_LESSONS_GROUPS = ?", id)
+		rows, err := db.Query("SELECT USERS.firstName, USERS.lastName, LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.picture, LESSONS.Id_LESSONS_GROUPS FROM LESSONS JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE Id_LESSONS_GROUPS = ?", id)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error":   true,
 				"message": "cannot get lessons",
@@ -295,11 +309,11 @@ func GetLessonsByGroupID(tokenAPI string) func(c *gin.Context) {
 		}
 		defer rows.Close()
 
-		var lessons []Lesson
+		var lessons []LessonReq
 
 		for rows.Next() {
-			var lesson Lesson
-			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup)
+			var lesson LessonReq
+			err = rows.Scan(&lesson.FirstName, &lesson.LastName, &lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup)
 			if err != nil {
 				c.JSON(500, gin.H{
 					"error":   true,
