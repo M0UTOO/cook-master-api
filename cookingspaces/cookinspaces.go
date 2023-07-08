@@ -1261,3 +1261,89 @@ func GetTop5CookingSpaces(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetEventsByCookingSpaceId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type Event struct {
+			IdEvent           int    `json:"idevent"`
+			Name              string `json:"name"`
+			Description       string `json:"description"`
+			Type              string `json:"type"`
+			EndTime           string `json:"endtime"`
+			IsClosed          bool   `json:"isclosed"`
+			StartTime         string `json:"starttime"`
+			IsInternal        bool   `json:"isinternal"`
+			IsPrivate         bool   `json:"isprivate"`
+			GroupDisplayOrder int    `json:"groupdisplayorder"`
+			DefaultPicture    string `json:"defaultpicture"`
+			IdEventGroups          int    `json:"ideventgroups"`
+			IdCookingSpace	int    `json:"idcookingspace"`
+			IdEvent2		  int    `json:"idevent2"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id is not safe",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to database",
+			})
+			return
+		}
+		defer db.Close()
+		rows, err := db.Query("SELECT * FROM EVENTS JOIN IS_HOSTED ON EVENTS.Id_EVENTS = IS_HOSTED.Id_EVENTS WHERE Id_COOKING_SPACES = ?", id)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get books",
+			})
+			return
+		}
+		defer rows.Close()
+		var events []Event
+		for rows.Next() {
+			var event Event
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups, &event.IdCookingSpace, &event.IdEvent2)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot get events",
+				})
+				return
+			}
+			events = append(events, event)
+		}
+		c.JSON(200, events)
+	}
+}

@@ -1062,12 +1062,63 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 				return
 			}
 
+			rows, err := db.Query("SELECT Id_ORDERS FROM ORDERS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot get client orders",
+				})
+				return
+			}
+
+			var idOrder int
+
+			for rows.Next() {
+				err = rows.Scan(&idOrder)
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot scan client orders",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM CONTAINS_ITEM WHERE Id_ORDERS=" + strconv.Itoa(idOrder))
+				if err != nil {
+					fmt.Println(err)
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete client orders items",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM CONTAINS_FOOD WHERE Id_ORDERS=" + strconv.Itoa(idOrder))
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete client orders food",
+					})
+					return
+				}
+			}
+
 			_, err = db.Exec("DELETE FROM ORDERS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "cannot delete client orders",
+				})
+				return
+			}
+
+			_, err = db.Exec("DELETE FROM FORMATIONS WHERE Id_CLIENTS=" + strconv.Itoa(idClient))
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client formations",
 				})
 				return
 			}
@@ -1104,9 +1155,10 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 
 			_, err = db.Exec("DELETE FROM MANAGERS WHERE Id_MANAGERS=" + strconv.Itoa(idManager))
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
-					"message": "cannot delete client",
+					"message": "cannot delete manager",
 				})
 				return
 			}
@@ -1120,6 +1172,106 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "contractor not found",
+				})
+				return
+			}
+
+			rows, err := db.Query("SELECT Id_ORDERS FROM ORDERS WHERE Id_CONTRACTORS =" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot get client orders",
+				})
+				return
+			}
+
+			var idOrder int
+
+			for rows.Next() {
+				err = rows.Scan(&idOrder)
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot scan client orders",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM CONTAINS_ITEM WHERE Id_ORDERS=" + strconv.Itoa(idOrder))
+				if err != nil {
+					fmt.Println(err)
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete client orders items",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM CONTAINS_FOOD WHERE Id_ORDERS=" + strconv.Itoa(idOrder))
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete client orders food",
+					})
+					return
+				}
+			}
+
+			_, err = db.Exec("DELETE FROM ORDERS WHERE Id_CONTRACTORS=" + strconv.Itoa(idContractor))
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client orders",
+				})
+				return
+			}
+
+			rows, err = db.Query("SELECT Id_ORDERS FROM ORDERS WHERE Id_CONTRACTORS_1=" + strconv.Itoa(idContractor))
+			if err != nil {
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot get client orders",
+				})
+				return
+			}
+
+			for rows.Next() {
+				err = rows.Scan(&idOrder)
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot scan client orders",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM CONTAINS_ITEM WHERE Id_ORDERS=" + strconv.Itoa(idOrder))
+				if err != nil {
+					fmt.Println(err)
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete client orders items",
+					})
+					return
+				}
+
+				_, err = db.Exec("DELETE FROM CONTAINS_FOOD WHERE Id_ORDERS=" + strconv.Itoa(idOrder))
+				if err != nil {
+					c.JSON(500, gin.H{
+						"error": true,
+						"message": "cannot delete client orders food",
+					})
+					return
+				}
+			}
+
+			_, err = db.Exec("DELETE FROM ORDERS WHERE Id_CONTRACTORS_1=" + strconv.Itoa(idContractor))
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cannot delete client orders",
 				})
 				return
 			}
@@ -1162,6 +1314,7 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 
 			_, err = db.Exec("DELETE FROM CONTRACTORS WHERE Id_CONTRACTORS=" + strconv.Itoa(idContractor))
 			if err != nil {
+				fmt.Println(err)
 				c.JSON(500, gin.H{
 					"error": true,
 					"message": "cannot delete contractor",
@@ -1170,8 +1323,39 @@ func DeleteUser(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
+		_, err = db.Exec("DELETE FROM BILLS WHERE Id_USERS=" + id)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot delete user",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM MESSAGES WHERE Id_USERS=" + id)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot delete user",
+			})
+			return
+		}
+
+		_, err = db.Exec("DELETE FROM MESSAGES WHERE Id_USERS_1=" + id)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot delete user",
+			})
+			return
+		}
+
 		_, err = db.Exec("DELETE FROM USERS WHERE Id_USERS=" + id)
 		if err != nil {
+			fmt.Println(err)
 			c.JSON(500, gin.H{
 				"error": true,
 				"message": "cannot delete user",

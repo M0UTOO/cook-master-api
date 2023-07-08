@@ -145,9 +145,10 @@ func main() {
 	cookingSpace.PATCH("/books/:idclient/:idcookingspace", cookingspaces.AddABooks(tokenAPI))     // WORKING
 	cookingSpace.DELETE("/books/:idclient/:idcookingspace", cookingspaces.DeleteABooks(tokenAPI)) // WORKING
 	cookingSpace.GET("/books/:id", cookingspaces.GetBooksByCookingSpaceID(tokenAPI)) // WORKING
-	cookingSpace.GET("/books/all", cookingspaces.GetCookingSpacesBooks(tokenAPI)) // WORKING")
+	cookingSpace.GET("/books/all", cookingspaces.GetCookingSpacesBooks(tokenAPI)) // WORKING
 	cookingSpace.DELETE("/:id", cookingspaces.DeleteCookingSpace(tokenAPI)) // WORKING
-	cookingSpace.GET("/top5", cookingspaces.GetTop5CookingSpaces(tokenAPI)) // WORKING")
+	cookingSpace.GET("/top5", cookingspaces.GetTop5CookingSpaces(tokenAPI)) // WORKING
+	cookingSpace.GET("/event/:id", cookingspaces.GetEventsByCookingSpaceId(tokenAPI)) // WORKING
 	cookingItem := r.Group("/cookingitem")
 	cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI))       // WORKING                       
 	cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI))   // WORKING                        
