@@ -1347,3 +1347,93 @@ func GetEventsByCookingSpaceId(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, events)
 	}
 }
+
+func GetBooksByUserId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		type BookReq struct {
+			IdCookingSpace int    `json:"idcookingspace"`
+			StartTime string `json:"starttime"`
+			EndTime   string `json:"endtime"`
+			Name 	string `json:"name"`
+			Picture string `json:"picture"`
+		}
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing id",
+			})
+			return
+		}
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id is not safe",
+			})
+			return
+		}
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to database",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idclient string
+
+		err = db.QueryRow("SELECT Id_CLIENTS FROM CLIENTS WHERE Id_USERS = '" + id + "'").Scan(&idclient)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "client not found",
+			})
+			return
+		}
+
+		rows, err := db.Query("SELECT COOKING_SPACES.Id_COOKING_SPACES, COOKING_SPACES.picture, COOKING_SPACES.name, BOOKS.startTime, BOOKS.endTime FROM BOOKS JOIN COOKING_SPACES ON BOOKS.Id_COOKING_SPACES = COOKING_SPACES.Id_COOKING_SPACES WHERE Id_CLIENTS = ?", idclient)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot get books",
+			})
+			return
+		}
+		defer rows.Close()
+		var books []BookReq
+		for rows.Next() {
+			var book BookReq
+			err = rows.Scan(&book.IdCookingSpace, &book.Picture, &book.Name, &book.StartTime, &book.EndTime)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "cannot get books",
+				})
+				return
+			}
+			books = append(books, book)
+		}
+		c.JSON(200, books)
+	}
+}

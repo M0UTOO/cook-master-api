@@ -76,7 +76,8 @@ func main() {
 	contractor.POST("/type", contractors.AddAContractorType(tokenAPI)) 									// WORKING
 	contractor.DELETE("/type/:id", contractors.DeleteAContractorType(tokenAPI)) 						// WORKING
 	contractor.GET("/type", contractors.GetContractorTypes(tokenAPI)) 									// WORKING
-	contractor.GET("/role/:search", contractors.GetContractorByRoles(tokenAPI))
+	contractor.GET("/role/:search", contractors.GetContractorByRoles(tokenAPI))							// WORKING
+	contractor.GET("/type/:id", contractors.GetCreatorRoleById(tokenAPI))							    // WORKING
 	manager := r.Group("/manager")
 	manager.GET("/all", managers.GetManagers(tokenAPI))      											// WORKING
 	manager.GET("/:id", managers.GetManagerByID(tokenAPI))   											// WORKING
@@ -149,6 +150,7 @@ func main() {
 	cookingSpace.DELETE("/:id", cookingspaces.DeleteCookingSpace(tokenAPI)) // WORKING
 	cookingSpace.GET("/top5", cookingspaces.GetTop5CookingSpaces(tokenAPI)) // WORKING
 	cookingSpace.GET("/event/:id", cookingspaces.GetEventsByCookingSpaceId(tokenAPI)) // WORKING
+	cookingSpace.GET("books/client/:id", cookingspaces.GetBooksByUserId(tokenAPI)) // WORKING
 	cookingItem := r.Group("/cookingitem")
 	cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI))       // WORKING                       
 	cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI))   // WORKING                        
