@@ -21,6 +21,7 @@ type Event struct {
 	IsClosed          bool   `json:"isclosed"`
 	StartTime         string `json:"starttime"`
 	IsInternal        bool   `json:"isinternal"`
+	IsOnline		  bool   `json:"isonline"`
 	IsPrivate         bool   `json:"isprivate"`
 	GroupDisplayOrder int    `json:"groupdisplayorder"`
 	DefaultPicture    string `json:"defaultpicture"`
@@ -76,7 +77,7 @@ func GetEvents(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -201,7 +202,7 @@ func GetEventByID(tokenAPI string) func(c *gin.Context) {
 
 		var event Event
 
-		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+		err = db.QueryRow("SELECT * FROM EVENTS WHERE Id_EVENTS = ?", id).Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -277,7 +278,7 @@ func GetEventsByGroupID(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -383,7 +384,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
-		result, err := db.Exec("INSERT INTO EVENTS (Name, Description, Type, EndTime, StartTime, isInternal, isPrivate, group_display_order, DefaultPicture, Id_EVENTS_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Description, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsPrivate, 0, 1)
+		result, err := db.Exec("INSERT INTO EVENTS (Name, Description, Type, EndTime, StartTime, isInternal, isOnline, isPrivate, group_display_order, DefaultPicture, Id_EVENTS_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Description, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsOnline, event.IsPrivate, 0, 1)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -633,6 +634,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 			IsClosed       int    `json:"isclosed"`
 			StartTime      string `json:"starttime"`
 			IsInternal     int    `json:"isinternal"`
+			IsOnline 	 int    `json:"isonline"`
 			IsPrivate      int    `json:"isprivate"`
 			DefaultPicture string `json:"defaultpicture"`
 		}
@@ -675,6 +677,7 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 
 		event.IsClosed = -1
 		event.IsInternal = -1
+		event.IsOnline = -1
 		event.IsPrivate = -1
 
 		err = c.BindJSON(&event)
@@ -775,6 +778,12 @@ func UpdateEvent(tokenAPI string) func(c *gin.Context) {
 			setClause = append(setClause, "isinternal = false")
 		} else if event.IsInternal == 1 {
 			setClause = append(setClause, "isinternal = true")
+		}
+
+		if event.IsOnline == 0 {
+			setClause = append(setClause, "isonline = false")
+		} else if event.IsOnline == 1 {
+			setClause = append(setClause, "isonline = true")
 		}
 
 		if event.IsPrivate == 0 {
@@ -2769,7 +2778,7 @@ func SearchForEvents(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -3000,7 +3009,7 @@ func GetComingEventByClientId(tokenAPI string) func (c *gin.Context) {
 			return
 		}
 
-		rows, err := db.Query("SELECT e.Id_EVENTS, e.name, e.description, e.type, e.endTime, e.isClosed, e.startTime, e.isInternal, e.isPrivate, e.group_display_order, e.defaultPicture, e.Id_EVENTS_GROUPS FROM EVENTS e JOIN PARTICIPATES p ON e.Id_EVENTS = p.Id_EVENTS WHERE p.Id_CLIENTS = " + idClient + " AND e.endTime > NOW();")
+		rows, err := db.Query("SELECT e.Id_EVENTS, e.name, e.description, e.type, e.endTime, e.isClosed, e.startTime, e.isInternal, e.isOnline, e.isPrivate, e.group_display_order, e.defaultPicture, e.Id_EVENTS_GROUPS FROM EVENTS e JOIN PARTICIPATES p ON e.Id_EVENTS = p.Id_EVENTS WHERE p.Id_CLIENTS = " + idClient + " AND e.endTime > NOW();")
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -3014,7 +3023,7 @@ func GetComingEventByClientId(tokenAPI string) func (c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -3090,7 +3099,7 @@ func GetPastEventByClientIdfunc(tokenAPI string) func (c *gin.Context) {
 			return
 		}
 
-		rows, err := db.Query("SELECT e.Id_EVENTS, e.name, e.description, e.type, e.endTime, e.isClosed, e.startTime, e.isInternal, e.isPrivate, e.group_display_order, e.defaultPicture, e.Id_EVENTS_GROUPS FROM EVENTS e JOIN PARTICIPATES p ON e.Id_EVENTS = p.Id_EVENTS WHERE p.Id_CLIENTS = " + idClient + " AND e.endTime < NOW() AND p.IsPresent = 1;")
+		rows, err := db.Query("SELECT e.Id_EVENTS, e.name, e.description, e.type, e.endTime, e.isClosed, e.startTime, e.isInternal, e.isOnline, e.isPrivate, e.group_display_order, e.defaultPicture, e.Id_EVENTS_GROUPS FROM EVENTS e JOIN PARTICIPATES p ON e.Id_EVENTS = p.Id_EVENTS WHERE p.Id_CLIENTS = " + idClient + " AND e.endTime < NOW() AND p.IsPresent = 1;")
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -3104,7 +3113,7 @@ func GetPastEventByClientIdfunc(tokenAPI string) func (c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{
@@ -3409,7 +3418,7 @@ func GetEventsByUserId(tokenAPI string) func(c *gin.Context) {
 			return
 		}
 
-		rows, err := db.Query("SELECT EVENTS.Id_EVENTS, EVENTS.Name, EVENTS.Description, EVENTS.Type, EVENTS.Endtime, EVENTS.IsClosed, EVENTS.Starttime, EVENTS.IsInternal, EVENTS.IsPrivate, EVENTS.Group_Display_Order, EVENTS.defaultPicture, EVENTS.Id_EVENTS_GROUPS FROM EVENTS JOIN ANIMATES ON EVENTS.Id_EVENTS = ANIMATES.Id_EVENTS WHERE Id_CONTRACTORS = '" + idcontractor + "';")
+		rows, err := db.Query("SELECT EVENTS.Id_EVENTS, EVENTS.Name, EVENTS.Description, EVENTS.Type, EVENTS.Endtime, EVENTS.IsClosed, EVENTS.Starttime, EVENTS.IsInternal, EVENTS.IsOnline, EVENTS.IsPrivate, EVENTS.Group_Display_Order, EVENTS.defaultPicture, EVENTS.Id_EVENTS_GROUPS FROM EVENTS JOIN ANIMATES ON EVENTS.Id_EVENTS = ANIMATES.Id_EVENTS WHERE Id_CONTRACTORS = '" + idcontractor + "';")
 		if err != nil {
 			fmt.Println(err)
 			c.JSON(500, gin.H{
@@ -3423,7 +3432,7 @@ func GetEventsByUserId(tokenAPI string) func(c *gin.Context) {
 
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{

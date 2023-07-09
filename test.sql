@@ -167,6 +167,7 @@ CREATE TABLE EVENTS(
    isClosed BOOLEAN DEFAULT FALSE,
    startTime DATETIME,
    isInternal BOOLEAN,
+   isOnline BOOLEAN DEFAULT FALSE;,
    isPrivate BOOLEAN,
    group_display_order INT,
    defaultPicture VARCHAR(255)  DEFAULT 'default.jpg',
