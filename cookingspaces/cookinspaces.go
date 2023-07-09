@@ -1275,6 +1275,7 @@ func GetEventsByCookingSpaceId(tokenAPI string) func(c *gin.Context) {
 			IsClosed          bool   `json:"isclosed"`
 			StartTime         string `json:"starttime"`
 			IsInternal        bool   `json:"isinternal"`
+			IsOnline 		bool   `json:"isonline"`
 			IsPrivate         bool   `json:"isprivate"`
 			GroupDisplayOrder int    `json:"groupdisplayorder"`
 			DefaultPicture    string `json:"defaultpicture"`
@@ -1333,7 +1334,7 @@ func GetEventsByCookingSpaceId(tokenAPI string) func(c *gin.Context) {
 		var events []Event
 		for rows.Next() {
 			var event Event
-			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups, &event.IdCookingSpace, &event.IdEvent2)
+			err = rows.Scan(&event.IdEvent, &event.Name, &event.Description, &event.Type, &event.EndTime, &event.IsClosed, &event.StartTime, &event.IsInternal, &event.IsOnline, &event.IsPrivate, &event.GroupDisplayOrder, &event.DefaultPicture, &event.IdEventGroups, &event.IdCookingSpace, &event.IdEvent2)
 			if err != nil {
 				fmt.Println(err)
 				c.JSON(500, gin.H{

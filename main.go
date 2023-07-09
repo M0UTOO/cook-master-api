@@ -160,6 +160,7 @@ func main() {
 	cookingItem.DELETE("/:id", cookingitems.DeleteCookingItem(tokenAPI))           // WORKING              
 	cookingItem.PATCH("/:id", cookingitems.UpdateCookingItem(tokenAPI))          // WORKING                
 	cookingItem.GET("/cookingspace/:id", cookingitems.GetCookingItemsByCookingSpaceID(tokenAPI)) // WORKING
+	cookingItem.GET("/incookingspace/:id", cookingitems.GetCookingSpaceByCookingItemId(tokenAPI)) // WORKING
 	ingredient := r.Group("/ingredient")
 	ingredient.GET("/all", ingredients.GetIngredients(tokenAPI))                  // WORKING            
 	ingredient.GET("/:id", ingredients.GetIngredientByID(tokenAPI))                         // WORKING   
@@ -167,6 +168,7 @@ func main() {
 	ingredient.DELETE("/:id", ingredients.DeleteIngredient(tokenAPI))               // WORKING          
 	ingredient.PATCH("/:id", ingredients.UpdateIngredient(tokenAPI))                  // WORKING        
 	ingredient.GET("/cookingspace/:id", ingredients.GetIngredientsByCookingSpaceID(tokenAPI)) // WORKING
+	ingredient.GET("/incookingspace/:id", ingredients.GetCookingSpaceByIngredientId(tokenAPI)) // WORKING
 	lesson := r.Group("/lesson")
 	lesson.GET("/all", lessons.GetLessons(tokenAPI))                      // WORKING
 	lesson.GET("/:id", lessons.GetLessonByID(tokenAPI))                   // WORKING

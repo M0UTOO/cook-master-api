@@ -476,3 +476,82 @@ func GetCookingItemsByCookingSpaceID(tokenAPI string) func(c *gin.Context) {
 		c.JSON(200, cookingitems)
 	}
 }
+
+func GetCookingSpaceByCookingItemId(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type CookingSpace struct {
+			IdCookingSpace int     `json:"idCookingSpace"`
+			Name           string  `json:"name"`
+			Size           int     `json:"size"`
+			IsAvailable    bool    `json:"isAvailable"`
+			PricePerHour   float64 `json:"pricePerHour"`
+			IdPremise      int     `json:"idPremise"`
+			Picture 	   string  `json:"picture"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+		if tokenHeader == nil{
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error": true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error": true,
+				"message": "missing id",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT COOKING_SPACES.Id_COOKING_SPACES, COOKING_SPACES.name, COOKING_SPACES.size, COOKING_SPACES.isavailable, COOKING_SPACES.priceperhour, COOKING_SPACES.Id_PREMISES, COOKING_SPACES.Picture FROM COOKING_SPACES JOIN COOKING_ITEMS ON COOKING_ITEMS.Id_COOKING_SPACES = COOKING_SPACES.Id_COOKING_SPACES WHERE Id_COOKING_ITEMS = " + id)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error": true,
+				"message": "cookingspace not found",
+			})
+			return
+		}
+		defer rows.Close()
+
+		var cookingspaces []CookingSpace
+		for rows.Next() {
+			var cookingspace CookingSpace
+			err := rows.Scan(&cookingspace.IdCookingSpace, &cookingspace.Name, &cookingspace.Size, &cookingspace.IsAvailable, &cookingspace.PricePerHour, &cookingspace.IdPremise, &cookingspace.Picture)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error": true,
+					"message": "cookingspace not found",
+				})
+				return
+			}
+			cookingspaces = append(cookingspaces, cookingspace)
+		}
+
+		c.JSON(200, cookingspaces)
+	}
+}
