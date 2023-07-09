@@ -15,7 +15,7 @@ CREATE TABLE COOKING_SPACES(
    size SMALLINT,
    isAvailable BOOLEAN DEFAULT FALSE,
    PricePerHour DECIMAL(19,4),
-   picture VARCHAR(255)  DEFAULT 'default.jpg',
+   picture VARCHAR(255)  DEFAULT 'default.png',
    Id_PREMISES INT NOT NULL,
    PRIMARY KEY(Id_COOKING_SPACES),
    FOREIGN KEY(Id_PREMISES) REFERENCES PREMISES(Id_PREMISES)
@@ -107,7 +107,7 @@ CREATE TABLE USERS(
    password CHAR(255)  NOT NULL,
    firstName VARCHAR(50)  NOT NULL,
    lastName VARCHAR(50)  NOT NULL,
-   profilePicture VARCHAR(100)  DEFAULT 'default.jpg',
+   profilePicture VARCHAR(100)  DEFAULT 'default.png',
    isCreatedAt DATETIME NOT NULL DEFAULT NOW(),
    lastSeen DATETIME NOT NULL DEFAULT NOW(),
    isBlocked VARCHAR(100)  NOT NULL DEFAULT 'not blocked',
