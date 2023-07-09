@@ -384,7 +384,7 @@ func PostEvent(tokenAPI string) func(c *gin.Context) {
 			}
 		}
 
-		result, err := db.Exec("INSERT INTO EVENTS (Name, Description, Type, EndTime, StartTime, isInternal, isOnline, isPrivate, group_display_order, DefaultPicture, Id_EVENTS_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Description, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsOnline, event.IsPrivate, 0, 1)
+		result, err := db.Exec("INSERT INTO EVENTS (Name, Description, Type, EndTime, StartTime, isInternal, isOnline, isPrivate, group_display_order, DefaultPicture, Id_EVENTS_GROUPS) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, DEFAULT, ?)", event.Name, event.Description, event.Type, event.EndTime, event.StartTime, event.IsInternal, event.IsOnline, event.IsPrivate, 0, 1)
 		fmt.Println(err)
 		if err != nil {
 			c.JSON(500, gin.H{
@@ -1449,7 +1449,10 @@ func GetCookingSpacesByEventID(tokenAPI string) func(c *gin.Context) {
 
 		cookingspaces = append(cookingspaces, cookingspace)
 
-		c.JSON(200, cookingspaces)
+		c.JSON(200, gin.H{
+			"error":   false,
+			"cookingspaces": cookingspaces,
+		})
 	}
 }
 
