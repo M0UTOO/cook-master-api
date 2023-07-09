@@ -1575,3 +1575,97 @@ func IsLessonWatched(tokenAPI string) func (c *gin.Context) {
 		})
 	}
 }
+
+func SearchForLessons(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type LessonReq struct {
+			IdLesson          int    `json:"idlesson"`
+			Name              string `json:"name"`
+			Content           string `json:"content"`
+			Description       string `json:"description"`
+			Difficulty        int    `json:"difficulty"`
+			Picture 		 string `json:"picture"`
+			GroupDisplayOrder int    `json:"group_display_order"`
+			IdLessonGroup     int    `json:"idlessongroup"`
+			IdUser 		  int    `json:"iduser"`
+			Firstname         string `json:"firstname"`
+			Lastname          string `json:"lastname"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		search := c.Param("search")
+		if search == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "search can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(search) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "search can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT LESSONS.Id_LESSONS, LESSONS.name, LESSONS.content, LESSONS.description, LESSONS.difficulty, LESSONS.group_display_order, LESSONS.picture, LESSONS.Id_LESSONS_GROUPS, CONTRACTORS.Id_USERS, USERS.firstname, USERS.lastname FROM LESSONS INNER JOIN TEACHES ON LESSONS.Id_LESSONS = TEACHES.Id_LESSONS INNER JOIN CONTRACTORS ON TEACHES.Id_CONTRACTORS = CONTRACTORS.Id_CONTRACTORS INNER JOIN USERS ON CONTRACTORS.Id_USERS = USERS.Id_USERS WHERE LESSONS.name LIKE '%" + search + "%'")
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "lessons not found",
+			})
+			return
+		}
+
+		var lessons []LessonReq
+
+		for rows.Next() {
+			var lesson LessonReq
+			err = rows.Scan(&lesson.IdLesson, &lesson.Name, &lesson.Content, &lesson.Description, &lesson.Difficulty, &lesson.GroupDisplayOrder, &lesson.Picture, &lesson.IdLessonGroup, &lesson.IdUser, &lesson.Firstname, &lesson.Lastname)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "lessons not found",
+				})
+				return
+			}
+			lessons = append(lessons, lesson)
+		}
+
+		c.JSON(200, lessons)
+		return
+	}
+}
+

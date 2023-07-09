@@ -135,6 +135,7 @@ func main() {
 	premise.DELETE("/:id", premises.DeletePremise(tokenAPI)) // WORKING
 	premise.PATCH("/:id", premises.UpdatePremise(tokenAPI))  // WORKING
 	premise.GET("/books", premises.GetBooksByPremises(tokenAPI)) // WORKING
+	premise.GET("/cookingspace/:id", premises.GetPremiseByCookingSpace(tokenAPI)) // WORKING
 	cookingSpace := r.Group("/cookingspace")
 	cookingSpace.GET("/all", cookingspaces.GetCookingSpaces(tokenAPI))           // WORKING                 
 	cookingSpace.GET("/:id", cookingspaces.GetCookingSpaceByID(tokenAPI))      // WORKING                   
@@ -150,7 +151,8 @@ func main() {
 	cookingSpace.DELETE("/:id", cookingspaces.DeleteCookingSpace(tokenAPI)) // WORKING
 	cookingSpace.GET("/top5", cookingspaces.GetTop5CookingSpaces(tokenAPI)) // WORKING
 	cookingSpace.GET("/event/:id", cookingspaces.GetEventsByCookingSpaceId(tokenAPI)) // WORKING
-	cookingSpace.GET("books/client/:id", cookingspaces.GetBooksByUserId(tokenAPI)) // WORKING
+	cookingSpace.GET("/books/client/:id", cookingspaces.GetBooksByUserId(tokenAPI)) // WORKING
+	cookingSpace.GET("/search/:search", cookingspaces.SearchForCookingSpaces(tokenAPI)) // WORKING
 	cookingItem := r.Group("/cookingitem")
 	cookingItem.GET("/all", cookingitems.GetCookingItems(tokenAPI))       // WORKING                       
 	cookingItem.GET("/:id", cookingitems.GetCookingItemByID(tokenAPI))   // WORKING                        
@@ -184,6 +186,7 @@ func main() {
 	lesson.DELETE("/views/:id", lessons.UpdateLessonViews(tokenAPI)) // WORKING
 	lesson.GET("/views/:id", lessons.GetAllClientViews(tokenAPI)) // WORKING
 	lesson.GET("/watch/:iduser/:idlesson", lessons.IsLessonWatched(tokenAPI)) // WORKING
+	lesson.GET("/search/:search", lessons.SearchForLessons(tokenAPI)) // WORKING
 	food := r.Group("/food")
 	food.GET("/all", foods.GetFoods(tokenAPI))      // WORKING
 	food.GET("/:id", foods.GetFoodByID(tokenAPI))   // WORKING

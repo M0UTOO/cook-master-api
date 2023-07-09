@@ -556,3 +556,81 @@ func GetBooksByPremises(tokenAPI string) func(c *gin.Context) {
 		return
 	}
 }
+
+func GetPremiseByCookingSpace(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		id := c.Param("id")
+		if id == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(id) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		rows, err := db.Query("SELECT * FROM PREMISES WHERE Id_PREMISES = (SELECT Id_PREMISES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = ?)", id)
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "premises not found",
+			})
+			return
+		}
+
+		var premises []Premise
+
+		for rows.Next() {
+			var premise Premise
+			err = rows.Scan(&premise.IdPremise, &premise.Name, &premise.StreetNumber, &premise.StreetName, &premise.City, &premise.Country)
+			if err != nil {
+				fmt.Println(err)
+				c.JSON(500, gin.H{
+					"error":   true,
+					"message": "premises not found",
+				})
+				return
+			}
+			premises = append(premises, premise)
+		}
+
+		c.JSON(200, premises)
+		return
+	}
+}
