@@ -103,6 +103,7 @@ func main() {
 	event.GET("/participate/:idevent", events.GetClientsByEventID(tokenAPI))                      		// WORKING
 	event.GET("/groups/:idevent", events.GetGroupsByEventID(tokenAPI))                             		// WORKING
 	event.GET("/host/:idevent", events.GetCookingSpacesByEventID(tokenAPI))                       		// WORKING
+	event.GET("/host/java/:idevent", events.GetCookingSpacesByEventIDJava(tokenAPI))           			// WORKING
 	event.POST("/participate/:idevent/:iduser", events.AddClientToAnEvent(tokenAPI))              		// WORKING
 	event.DELETE("/participate/:idevent/:iduser", events.DeleteClientFromAnEvent(tokenAPI))      		// WORKING
 	event.PATCH("/participation/:idevent/:iduser", events.ValidateClientPresence(tokenAPI))        		// WORKING

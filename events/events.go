@@ -1456,6 +1456,91 @@ func GetCookingSpacesByEventID(tokenAPI string) func(c *gin.Context) {
 	}
 }
 
+func GetCookingSpacesByEventIDJava(tokenAPI string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+
+		type CookingSpaceReq struct {
+			IdCookingSpace string `json:"idcookingspace"`
+			Name 		 string `json:"name"`
+			IdPremise string `json:"idpremise"`
+		}
+
+		tokenHeader := c.Request.Header["Token"]
+
+		if len(tokenHeader) == 0 {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "missing token",
+			})
+		}
+
+		err := token.CheckAPIToken(tokenAPI, tokenHeader[0], c)
+		if err != nil {
+			c.JSON(498, gin.H{
+				"error":   true,
+				"message": "wrong token",
+			})
+			return
+		}
+
+		idevent := c.Param("idevent")
+		if idevent == "" {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't be empty",
+			})
+			return
+		}
+
+		if !utils.IsSafeString(idevent) {
+			c.JSON(400, gin.H{
+				"error":   true,
+				"message": "id event can't contain sql injection",
+			})
+			return
+		}
+
+		db, err := sql.Open("mysql", token.DbLogins)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cannot connect to bdd",
+			})
+			return
+		}
+		defer db.Close()
+
+		var idcookingspace string
+
+		err = db.QueryRow("SELECT Id_COOKING_SPACES FROM IS_HOSTED WHERE Id_EVENTS = '" + idevent + "'").Scan(&idcookingspace)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "event not found",
+			})
+			return
+		}
+
+		var cookingspaces []CookingSpaceReq 
+		var cookingspace CookingSpaceReq
+
+		err = db.QueryRow("SELECT Name, Id_PREMISES FROM COOKING_SPACES WHERE Id_COOKING_SPACES = '" + idcookingspace + "'").Scan(&cookingspace.Name, &cookingspace.IdPremise)
+		if err != nil {
+			c.JSON(500, gin.H{
+				"error":   true,
+				"message": "cookingspace not found",
+			})
+			return
+		}
+
+		cookingspace.IdCookingSpace = idcookingspace
+
+		cookingspaces = append(cookingspaces, cookingspace)
+
+		c.JSON(200, cookingspaces)
+	}
+}
+
 
 func GetContractorsByEventID(tokenAPI string) func(c *gin.Context) {
 	return func(c *gin.Context) {
