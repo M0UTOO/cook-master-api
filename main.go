@@ -22,31 +22,31 @@ import (
 	"cook-master-api/messages"
 	"cook-master-api/subscriptions"
 	"github.com/gin-gonic/gin"
-	// "github.com/unrolled/secure"
+	"github.com/unrolled/secure"
 )
 
 func main() {
 	tokenAPI := token.GetAPIToken()
-	//gin.SetMode(gin.ReleaseMode)
-	// secureFunc := func() gin.HandlerFunc {
-	// 	return func(c *gin.Context) {
-	// 		secureMiddleware := secure.New(secure.Options{
-	// 			SSLRedirect: true,
-	// 			SSLHost:     "api.becomeacookmaster.live:9000",
-	// 		})
-	// 		err := secureMiddleware.Process(c.Writer, c.Request)
+	gin.SetMode(gin.ReleaseMode)
+	 secureFunc := func() gin.HandlerFunc {
+	 	return func(c *gin.Context) {
+	 		secureMiddleware := secure.New(secure.Options{
+	 			SSLRedirect: true,
+ 				SSLHost:     "api.becomeacookmaster.live:9000",
+	 		})
+	 		err := secureMiddleware.Process(c.Writer, c.Request)
 
-	// 		// If there was an error, do not continue.
-	// 		if err != nil {
-	// 			return
-	// 		}
+	 		// If there was an error, do not continue.
+	 		if err != nil {
+	 			return
+	 		}
 
-	// 		c.Next()
-	// 	}
-	// }()
+	 		c.Next()
+	 	}
+	}()
 	r := gin.Default()
 	r.Use(utils.CorsMiddleware())
-	// r.Use(secureFunc)
+	r.Use(secureFunc)
 	r.GET("/", index)
 	user := r.Group("/user")
 	user.GET("/:id", users.GetUserByID(tokenAPI))                										// WORKING
@@ -246,8 +246,8 @@ func main() {
 	message.GET("/:idsender/:idreceiver", messages.GetMessageForIdSenderAndIdReceiver(tokenAPI))
 	message.POST("/:idsender/:idreceiver", messages.PostMessage(tokenAPI))
 	message.GET("/chief/:id", messages.GetAllClientForAContractorUserId(tokenAPI))
-	r.Run(":9000")
-	//r.RunTLS(":9000", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
+	r.Run(":9001")
+	r.RunTLS(":9000", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
 }
 
 func index(c *gin.Context) {
