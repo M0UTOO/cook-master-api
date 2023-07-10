@@ -26,6 +26,7 @@
 
 token/token.go
 cook-master-api
-dump.sql
+backup.sh
+backups
 
 local_main.go
