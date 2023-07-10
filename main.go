@@ -246,7 +246,7 @@ func main() {
 	message.GET("/:idsender/:idreceiver", messages.GetMessageForIdSenderAndIdReceiver(tokenAPI))
 	message.POST("/:idsender/:idreceiver", messages.PostMessage(tokenAPI))
 	message.GET("/chief/:id", messages.GetAllClientForAContractorUserId(tokenAPI))
-	r.Run(":9001")
+	go r.Run(":9001")
 	r.RunTLS(":9000", "/home/debian/.ssh/api_certificate.pem", "/home/debian/.ssh/api_private_key.pem")
 }
 
